@@ -1,4 +1,4 @@
-FROM rook/toolbox:v0.7.0
+FROM build-9e0a9038/toolbox-base-amd64
 
 
 ENV LANG en_US.UTF-8
@@ -13,12 +13,14 @@ RUN apt-get update -y && apt-get install wget git -y &&  \
     ls /go
 
 RUN mkdir -p /app
-RUN chmod -R +x /app
+
 ADD .git-credentials /
 ADD main.sh /
+ADD main.sh /app/main.sh
 RUN chmod +x /main.sh
 ADD go-wrapper /usr/local/bin/
 RUN chmod +x /usr/local/bin/go-wrapper
-ENTRYPOINT top -b
-CMD --ignored-param1
+RUN chmod -R +rwx /app
+WORKDIR ["/app/"]
+
  
