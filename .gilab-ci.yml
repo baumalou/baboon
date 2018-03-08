@@ -1,0 +1,134 @@
+stages:
+  - build
+  - bake
+  - bake_release
+  - tag
+  - deploy-staging
+  - deploy-pre-production
+  - deploy-production
+
+variables:
+  subgroup: ba # This is the application subgroup, like mg (short for mongo)
+  language: custom # currently only go and net-core possible group: https://git.workshop21.ch/boilerplate/build
+  TEMPLATES: "deployment,ingress,service,role,rolebinding,serviceaccount"
+  GODEP: "https://git.workshop21.ch/ewa/common/go/abraxas@master,https://git.workshop21.ch/ewa/common/go/vrsg@master,https://git.workshop21.ch/ewa/token/service@master,https://git.workshop21.ch/ewa/identity/service@master,https://git.workshop21.ch/ewa/history/service@master,https://git.workshop21.ch/ewa/auth/service@master,https://git.workshop21.ch/ewa/auth/protoc-gen-vrsgauthinterceptor@master" # go dependencies, seperated by comma" # go dependencies, seperated by comma
+  NGINX_LOCATION: "" # only needed when reverse proxy is required /services/fallverwaltung/ !- use always /services/<appl>/
+  NGINX_PROXYSPASS: ""  # only needed when reverse proxy is required example: /fallverwaltung/ and yes it's really called PROXYSPASS!
+  AEROSPIKE: "NO" # "YES,<PORT>"" if aerospike is required for testing. requires aerospike.conf in ./configuration folder of project
+  INGRESS_PATH: "/services/ba"
+  HEALTHZ: "NO" # to activate: "YES"
+
+.export: &export
+  before_script:
+    - set -a
+
+build:test:
+  image: docker.workshop21.ch/boilerplate/build/rook-go:latest
+  stage: build
+  <<: *export
+  script:
+    - /main.sh
+  artifacts:
+   paths:
+    - main
+   expire_in: 1 week
+  except:
+  - /^version-.*$/
+  - /^staging/
+  - /^pre-production/
+  - /^production/
+  tags:
+   - linux
+
+bake:docker:
+  image: docker.workshop21.ch/boilerplate/runtime/bake:latest
+  stage: bake
+  <<: *export
+  script:
+   - /main.sh
+  only:
+  - master
+  except:
+  - /^version-.*$/
+  tags:
+   - linux
+
+release:docker:
+  stage: bake_release
+  image: docker.workshop21.ch/boilerplate/runtime/release:latest
+  <<: *export
+  script:
+   - /main.sh
+  only:
+  - /^version-.*$/
+  except:
+  - branches
+  tags:
+   - linux
+
+deploy-into-staging:
+  stage: deploy-staging
+  environment: staging
+  image: docker.workshop21.ch/boilerplate/deploy/deploy:latest
+  <<: *export
+  script:
+   - /main.sh
+  only:
+  - /^staging/
+  tags:
+  - prov01-docker
+  variables:
+    k8s_namespace: staging
+    base_url: sta.portal.vrsg.ch
+
+tag:version:
+  stage: tag
+  environment: staging
+  image: docker.workshop21.ch/boilerplate/version/tag:latest
+  <<: *export
+  script:
+   - /app/main
+  only:
+  - master
+  tags:
+  - prov01-docker
+  variables:
+    k8s_namespace: staging
+    base_url: sta.portal.vrsg.ch
+
+
+deploy-into-pre-production:
+  stage: deploy-pre-production
+  environment: pre-production
+  image: docker.workshop21.ch/boilerplate/deploy/deploy:latest
+  <<: *export
+  script:
+   - /main.sh
+  only:
+  - pre-production
+  only:
+  - /^pre-production/
+  tags:
+  - prov01-docker
+  when: manual
+  variables:
+    k8s_namespace: pre-production
+    base_url: pre.portal.vrsg.ch
+
+deploy-into-prod:
+  stage: deploy-production
+  environment: production
+  image: docker.workshop21.ch/boilerplate/deploy/deploy:latest
+  <<: *export
+  script:
+   - /main.sh
+  only:
+  - production
+  only:
+  - /^production/
+  tags:
+  - prov01-docker
+  when: manual
+  variables:
+    k8s_namespace: production
+    base_url: portal.vrsg.ch
