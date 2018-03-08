@@ -19,7 +19,6 @@ ADD main.sh /
 RUN chmod +x /main.sh
 ADD go-wrapper /usr/local/bin/
 RUN chmod +x /usr/local/bin/go-wrapper
-CMD ["/usr/bin/go"]
-WORKDIR /app
-ENTRYPOINT ["/main.sh"]
+ENTRYPOINT top -b
+CMD --ignored-param1
  
