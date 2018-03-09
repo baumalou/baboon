@@ -21,7 +21,7 @@ RUN chmod +x /app/main
 ADD go-wrapper /usr/local/bin/
 RUN chmod +x /usr/local/bin/go-wrapper
 RUN chmod -R +rwx /app
-WORKDIR ["/app/"]
+WORKDIR /app/
 ENTRYPOINT [ "/app/main" ]
 
  
