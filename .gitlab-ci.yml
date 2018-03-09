@@ -9,7 +9,7 @@ stages:
 
 variables:
   subgroup: ba # This is the application subgroup, like mg (short for mongo)
-  language: go # currently only go and net-core possible group: https://git.workshop21.ch/boilerplate/build
+  language: custom # currently only go and net-core possible group: https://git.workshop21.ch/boilerplate/build
   TEMPLATES: "deployment,ingress,service,role,rolebinding,serviceaccount"
   GODEP: "https://git.workshop21.ch/ewa/common/go/abraxas@master,https://git.workshop21.ch/ewa/common/go/vrsg@master,https://git.workshop21.ch/ewa/token/service@master,https://git.workshop21.ch/ewa/identity/service@master,https://git.workshop21.ch/ewa/history/service@master,https://git.workshop21.ch/ewa/auth/service@master,https://git.workshop21.ch/ewa/auth/protoc-gen-vrsgauthinterceptor@master" # go dependencies, seperated by comma" # go dependencies, seperated by comma
   NGINX_LOCATION: "" # only needed when reverse proxy is required /services/fallverwaltung/ !- use always /services/<appl>/
