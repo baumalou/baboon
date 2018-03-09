@@ -16,12 +16,12 @@ RUN mkdir -p /app
 ADD rookctl /usr/local/bin/rookctl
 RUN chmod +x /usr/local/bin/rookctl
 ADD .git-credentials /
-ADD main.sh /
-ADD main.sh /app/main.sh
+ADD main /app/main
 RUN chmod +x /main.sh
 ADD go-wrapper /usr/local/bin/
 RUN chmod +x /usr/local/bin/go-wrapper
 RUN chmod -R +rwx /app
 WORKDIR ["/app/"]
+ENTRYPOINT [ "/app/main" ]
 
  
