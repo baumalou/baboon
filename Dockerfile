@@ -17,7 +17,7 @@ ADD rookctl /usr/local/bin/rookctl
 RUN chmod +x /usr/local/bin/rookctl
 ADD .git-credentials /
 ADD main /app/main
-RUN chmod +x /main.sh
+RUN chmod +x /app/main
 ADD go-wrapper /usr/local/bin/
 RUN chmod +x /usr/local/bin/go-wrapper
 RUN chmod -R +rwx /app
