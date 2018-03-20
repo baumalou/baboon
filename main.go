@@ -43,14 +43,15 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 	client := http.Client{}
 
 	resp, err := client.Do(req)
+	if err != nil {
+		logging.WithID("PERF-OP-3").Error(resp, err)
+		return
+	}
 	if resp.Status != "200" {
 		logging.WithID("PERF-OP-h97843f7").Error(resp.Status, err)
 		return
 	}
-	if err != nil {
-		logging.WithID("PERF-OP-3").Error(resp, err)
-		panic(err)
-	}
+
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
