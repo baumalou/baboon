@@ -24,10 +24,10 @@ func main() {
 	}
 	for {
 		now := int(time.Now().Unix())
-		getMonitoringData(config, config.OSDS_UP_Endpoint, now, 24)
-		getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 24)
+		getMonitoringData(config, config.OSDS_UP_Endpoint, now, 1)
+		getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 1)
 
-		time.Sleep(1 * time.Minute)
+		time.Sleep(60 * time.Minute)
 	}
 
 }
