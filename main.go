@@ -44,6 +44,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 
 	resp, err := client.Do(req)
 	if err != nil {
+		logging.WithID("PERF-OP-3").Error(resp, err)
 		panic(err)
 	}
 	defer resp.Body.Close()
