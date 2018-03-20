@@ -1,0 +1,18 @@
+TaskmasterEndpoint = "tm-service:80"
+SamplingStepSize = "10"
+MonitoringHost = "https://monitoring.workshop21.ch"
+OSDS_UP_Endpoint = "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"
+AVG_OSD_APPLY_LATENCY = "/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_perf_apply_latency_seconds)"
+BearerToken = "eyJrIjoiU1VBeFpZNzBYUGg4Wm83UjBUZjUxOHI4NFlaWUhYc1ciLCJuIjoidmlld2VyIiwiaWQiOjF9"
+
+
+[ServiceConfig]
+ServiceName = "IKS-V1"
+ServicePW = "test1234"
+TokenEndpoint = "tkn-service.production.svc.cluster.local:80" 
+Scopes = ["IKS-V1"]
+Port = ":80"
+
+[AerospikeConfig]
+AerospikeHosts = ["iks-aerospike-0.iks-aerospike","iks-aerospike-1.iks-aerospike","iks-aerospike-2.iks-aerospike","iks-aerospike-3.iks-aerospike"]
+AerospikePort = 3000

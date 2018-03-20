@@ -1,0 +1,15 @@
+TaskmasterEndpoint = "localhost:51114"
+PermissionEndpoint = "localhost:50051"
+IdentityEndpoint = "localhost:50059"
+
+[ServiceConfig]
+ServiceName = "IKS-V1"
+ServicePW = "test1234"
+TokenEndpoint = "localhost:51111"
+Scopes = ["IKS-V1"]
+Port = ":51115"
+
+[AerospikeConfig]
+AerospikeHosts = ["127.0.0.1"]
+AerospikePort = 3060
+AerospikePW = ""

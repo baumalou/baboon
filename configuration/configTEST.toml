@@ -1,0 +1,11 @@
+[ServiceConfig]
+ServiceName = "IKS-V2"
+ServicePW = "test1234"
+TokenEndpoint = "tkn-service:80"
+Scopes = ["IKS-V2"]
+Port = ":80"
+
+[AerospikeConfig]
+AerospikeHosts = ["ewa.iks.service.aerospike.test"]
+AerospikePort = 9850
+AerospikePW = ""
