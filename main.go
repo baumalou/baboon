@@ -17,6 +17,7 @@ import (
 )
 
 func main() {
+	logging.WithID("PERF-OP-000").Info("operator started")
 	config, err := configuration.ReadConfig(nil)
 	if err != nil {
 		logging.WithID("PERF-OP-1").Fatal(err)
@@ -25,8 +26,8 @@ func main() {
 		now := int(time.Now().Unix())
 		getMonitoringData(config, config.OSDS_UP_Endpoint, now, 24)
 		getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 24)
-		log.Println("operator started")
-		time.Sleep(100 * time.Minute)
+
+		time.Sleep(1 * time.Minute)
 	}
 
 }
@@ -47,7 +48,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		logging.WithID("PERF-OP-3").Error(resp, err)
 		return
 	}
-	if resp.Status != "200" {
+	if resp.StatusCode != 200 {
 		logging.WithID("PERF-OP-h97843f7").Error(resp.Status, err)
 		return
 	}
