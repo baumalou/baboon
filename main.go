@@ -50,6 +50,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		logging.WithError("PERF-OP-h9u349u43", err)
+		return
 	} else {
 		logging.WithID("PERF-OP-0h8943o483f4o8").Info(result.Status)
 	}
