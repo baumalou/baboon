@@ -17,7 +17,10 @@ import (
 )
 
 func main() {
-	config, _ := configuration.ReadConfig(nil)
+	config, err := configuration.ReadConfig(nil)
+	if err != nil {
+		logging.WithID("PERF-OP-1").Fatal(err)
+	}
 	for {
 		now := int(time.Now().Unix())
 		getMonitoringData(config, config.OSDS_UP_Endpoint, now, 24)
@@ -33,7 +36,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 	startTime := -time.Duration(hoursInPast) * time.Hour
 	start := int(time.Now().Add(startTime).Unix())
 	url := config.MonitoringHost + endpoint + "&start=" + strconv.Itoa(start) + "&end=" + strconv.Itoa(timeStampTo) + "&step=" + config.SamplingStepSize
-
+	logging.WithIDFields("PERF-OP-2").Info(url)
 	var bearer = "Bearer " + config.BearerToken
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Add("authorization", bearer)
