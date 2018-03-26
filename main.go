@@ -55,7 +55,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		// 	panic(err)
 		// }
 		value, _ := strconv.ParseFloat(res[1].(string), 64)
-		ts, _ := strconv.ParseFloat(res[0].(string), 64)
+		ts := int(res[0].(float64))
 		res = append(res, ts)
 		q.Insert(value)
 
