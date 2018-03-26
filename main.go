@@ -32,6 +32,7 @@ func main() {
 		data[1] = getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 1)
 
 		time.Sleep(60 * time.Minute)
+		log.Println(data)
 	}
 
 }
