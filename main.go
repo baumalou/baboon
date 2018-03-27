@@ -24,32 +24,34 @@ func main() {
 		logging.WithID("PERF-OP-1").Fatal(err)
 	}
 	//testing purpose:
-	var data = [2][650]int{}
 
 	for {
 		now := int(time.Now().Unix())
-		data[0] = getMonitoringData(config, config.OSDS_UP_Endpoint, now, 1)
-		data[1] = getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 1)
+		osdUP := getMonitoringData(config, config.OSDS_UP_Endpoint, now, 1)
+		applyLatency := getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 1)
 
+		for ts, value := range osdUP {
+			fmt.Println(value, "     ", applyLatency[ts])
+		}
 		time.Sleep(60 * time.Minute)
-		log.Println(data)
+
 	}
 
 }
 
-func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) [650]int {
+func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) map[int]float64 {
 
 	result, err := getGrafanaResultset(config, endpoint, timeStampTo, hoursInPast)
 	if err != nil {
 		logging.WithError("PERF-OP-h9u349u43", err)
 		log.Println(err)
-		return [650]int{}
+		return nil
 	}
 	logging.WithID("PERF-OP-0h8943o483f4o8").Info(result.Status)
 
 	// Compute the 50th, 90th, and 99th percentile.
 	q := quantile.NewTargeted(0.50, 0.90, 0.99)
-	res := [650]int{}
+	res := make(map[int]float64)
 	for _, res := range result.Data.Result[0].Values {
 		// tm := time.Unix(int64(res[0].(float64)), 0)
 		// if err != nil {
@@ -57,7 +59,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		// }
 		value, _ := strconv.ParseFloat(res[1].(string), 64)
 		ts := int(res[0].(float64))
-		res = append(res, ts)
+		res[ts] = value
 		q.Insert(value)
 
 	}
