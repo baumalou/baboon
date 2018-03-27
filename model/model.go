@@ -11,3 +11,9 @@ type GrafanaResult struct {
 		} `json:"result"`
 	} `json:"data"`
 }
+
+type Data struct {
+	Bin       string
+	Timestamp int
+	Value     float64
+}

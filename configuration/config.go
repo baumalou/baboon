@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	cmnconfig "git.workshop21.ch/ewa/common/go/vrsg/configuration"
+	cmn_as_conf "git.workshop21.ch/ewa/common/go/abraxas/storage/aerospike"
 
 	"github.com/BurntSushi/toml"
 )
@@ -18,10 +18,10 @@ const (
 type Config struct {
 	OSDS_UP_Endpoint      string
 	MonitoringHost        string
-	ServiceConfig         cmnconfig.ServiceConfig
 	BearerToken           string
 	AVG_OSD_APPLY_LATENCY string
 	SamplingStepSize      string
+	AerospikeConfig       *cmn_as_conf.Config
 }
 
 func (c *Config) GetAerospikeNamespace() string {

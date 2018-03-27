@@ -14,6 +14,7 @@ import (
 	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/model"
+	"git.workshop21.ch/workshop21/ba/operator/storage/aerospike"
 	"github.com/bmizerany/perks/quantile"
 )
 
@@ -32,11 +33,22 @@ func main() {
 
 		for ts, value := range osdUP {
 			fmt.Println(value, "     ", applyLatency[ts])
+
 		}
+
 		time.Sleep(60 * time.Minute)
 
 	}
 
+}
+
+func StoreData(config *configuration.Config) error {
+	asStorage, err := aerospike.NewASStorage(config)
+	if err != nil {
+		return err
+	}
+	asStorage.CreateData(&model.Data{Value: 923847})
+	return err
 }
 
 func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) map[int]float64 {
@@ -51,7 +63,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 
 	// Compute the 50th, 90th, and 99th percentile.
 	q := quantile.NewTargeted(0.50, 0.90, 0.99)
-	res := make(map[int]float64)
+	data := make(map[int]float64)
 	for _, res := range result.Data.Result[0].Values {
 		// tm := time.Unix(int64(res[0].(float64)), 0)
 		// if err != nil {
@@ -60,7 +72,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		value, _ := strconv.ParseFloat(res[1].(string), 64)
 		ts := int(res[0].(float64))
 		fmt.Println(ts, "    ", value)
-		res[ts] = value
+		data[ts] = value
 		q.Insert(value)
 
 	}
@@ -70,7 +82,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 	fmt.Println("perc99:", q.Query(0.99))
 	fmt.Println("count:", q.Count())
 
-	return res
+	return data
 
 }
 

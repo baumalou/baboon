@@ -1,42 +1,18 @@
 package storage
 
-// import (
-// 	"encoding/json"
-// 	"io/ioutil"
-// 	"os"
-// 	"path"
+import (
+	"git.workshop21.ch/ewa/common/go/abraxas/storage"
+	"git.workshop21.ch/workshop21/ba/operator/model"
+)
 
-// 	"git.workshop21.ch/ewa/common/go/abraxas/logging"
-// 	"git.workshop21.ch/ewa/common/go/abraxas/storage"
-// 	"git.workshop21.ch/ewa/common/go/abraxas/storage/filter"
-// 	"git.workshop21.ch/ewa/common/go/abraxas/storage/idSupplier"
-// 	"git.workshop21.ch/ewa/common/go/abraxas/storage/migration"
-// )
+type Storage interface {
+	Health() error
+	MigratorRepository() storage.Repository
+}
 
-// type Storage interface {
-// 	Health() error
-// 	MigratorRepository() storage.Repository
-// 	UserStorage
-// 	LoginStorage
-// }
-
-// type UserStorage interface {
-// 	GetUserList(...filter.Filter) (*id_pb.Users, error)
-// 	GetUserByID(id interface{}) (*id_pb.User, error)
-// 	GetUserByLoginID(id interface{}) (*id_pb.User, error)
-// 	UpdateUser(*id_pb.User) (*id_pb.User, error)
-// 	CreateUser(*id_pb.User) (*id_pb.User, error)
-// 	DeleteUser(id interface{}) error
-// 	GetActiveUserFilter() filter.PredicateFunc
-// }
-
-// type LoginStorage interface {
-// 	GetLoginByID(interface{}) (*id_pb.Login, error)
-// 	GetLoginByIdmID(string) (*id_pb.Login, error)
-// 	GetLoginByUsername(string) (*id_pb.Login, error)
-// 	UpdateLogin(*id_pb.Login) (*id_pb.Login, error)
-// 	CreateLogin(*id_pb.Login) (*id_pb.Login, error)
-// }
+type DataStorage interface {
+	CreateData(*model.Data) error
+}
 
 // func NewID() uint64 {
 // 	id, err := idSupplier.SonyflakeIDSupplier.NewID(nil)

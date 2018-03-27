@@ -11,12 +11,12 @@ BearerToken = "eyJrIjoiU1VBeFpZNzBYUGg4Wm83UjBUZjUxOHI4NFlaWUhYc1ciLCJuIjoidmlld
   
 
 [ServiceConfig]
-ServiceName = "IKS-V1"
+ServiceName = "ba-V1"
 ServicePW = "test1234"
 TokenEndpoint = "tkn-service.production.svc.cluster.local:80" 
-Scopes = ["IKS-V1"]
+Scopes = ["ba-V1"]
 Port = ":80"
 
 [AerospikeConfig]
-AerospikeHosts = ["iks-aerospike-0.iks-aerospike","iks-aerospike-1.iks-aerospike","iks-aerospike-2.iks-aerospike","iks-aerospike-3.iks-aerospike"]
+AerospikeHosts = ["ba-aerospike-0.ba-aerospike","ba-aerospike-1.ba-aerospike","ba-aerospike-2.ba-aerospike","ba-aerospike-3.ba-aerospike"]
 AerospikePort = 3000
