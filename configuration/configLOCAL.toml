@@ -5,6 +5,8 @@ OSDS_UP_Endpoint = "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_o
 AVG_OSD_APPLY_LATENCY = "/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_perf_apply_latency_seconds)"
 BearerToken = "eyJrIjoiU1VBeFpZNzBYUGg4Wm83UjBUZjUxOHI4NFlaWUhYc1ciLCJuIjoidmlld2VyIiwiaWQiOjF9"
 
+AerospikeHost = "localhost"
+AerospikePort = 3000
 
 [ServiceConfig]
 ServiceName = "IKS-V1"
@@ -14,5 +16,5 @@ Scopes = ["IKS-V1"]
 Port = ":80"
 
 [AerospikeConfig]
-AerospikeHosts = ["iks-aerospike-0.iks-aerospike","iks-aerospike-1.iks-aerospike","iks-aerospike-2.iks-aerospike","iks-aerospike-3.iks-aerospike"]
+AerospikeHosts = ["localhost"]
 AerospikePort = 3000

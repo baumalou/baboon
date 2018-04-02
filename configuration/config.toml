@@ -2,14 +2,19 @@ TaskmasterEndpoint = "tm-service:80"
 SamplingStepSize = "10"
 MonitoringHost = "http://grafana.monitoring-system.svc:3000"
 OSDS_UP_Endpoint = "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"
-CEPH_IO_READ_OPS = "/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_read_ops"
+x = "/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_read_ops"
 CEPH_IO_WRITE_OPS = "/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_write_ops"
 AVG_OSD_APPLY_LATENCY = "/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_perf_apply_latency_seconds)"
 BearerToken = "eyJrIjoiU1VBeFpZNzBYUGg4Wm83UjBUZjUxOHI4NFlaWUhYc1ciLCJuIjoidmlld2VyIiwiaWQiOjF9"
 
-
+# Endpoints = [[Name = "jjkh", lkj = "ljk"], [Name = "jjkh", lkj = "ljk"]]
   
-
+key3 = [ [ "OSDS_UP_Endpoint", "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"], 
+    [ "OSDS_UP_Endpoint", "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"],
+    [ "OSDS_UP_Endpoint", "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"],
+    [ "OSDS_UP_Endpoint", "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"],
+    [ "OSDS_UP_Endpoint", "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"],
+     ]
 [ServiceConfig]
 ServiceName = "ba-V1"
 ServicePW = "test1234"

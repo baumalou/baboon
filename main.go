@@ -14,7 +14,7 @@ import (
 	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/model"
-	"git.workshop21.ch/workshop21/ba/operator/storage/aerospike"
+	"git.workshop21.ch/workshop21/ba/operator/storage"
 	"github.com/bmizerany/perks/quantile"
 )
 
@@ -24,30 +24,84 @@ func main() {
 	if err != nil {
 		logging.WithID("PERF-OP-1").Fatal(err)
 	}
+	// err = testData(config)
+	// if err != nil {
+	// 	log.Fatal("went wrong!")
+	// }
 	//testing purpose:
+	asStorage, err := storage.CreateClient(config)
+	if err != nil {
+		log.Println("not able to create as CLient")
+		return
+	}
 
 	for {
 		now := int(time.Now().Unix())
 		osdUP := getMonitoringData(config, config.OSDS_UP_Endpoint, now, 1)
-		applyLatency := getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 1)
-
+		//applyLatency := getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 1)
+		// IOPS_read := getMonitoringData(config, config.IOPS_read, now, 1)
+		// IOPS_write := getMonitoringData(config, config.IOPS_write, now, 1)
+		// Monitors_quorum := getMonitoringData(config, config.Monitors_quorum, now, 1)
+		// Available_capacity := getMonitoringData(config, config.Available_capacity, now, 1)
+		// AverageMonitorLatency := getMonitoringData(config, config.AverageMonitorLatency, now, 1)
+		// Average_OSD_apply_latency := getMonitoringData(config, config.Average_OSD_apply_latency, now, 1)
+		// Average_OSD_commit_latency := getMonitoringData(config, config.Average_OSD_commit_latency, now, 1)
+		// Throughput_write := getMonitoringData(config, config.Throughput_write, now, 1)
+		// Throughput_read := getMonitoringData(config, config.Throughput_read, now, 1)
+		// CEPH_health := getMonitoringData(config, config.CEPH_health, now, 1)
+		// OSD_Orphans := getMonitoringData(config, config.OSD_Orphans, now, 1)
+		// Used_percent_of_cores := getMonitoringData(config, config.Used_percent_of_cores, now, 1)
+		// Used_percent_of_memory := getMonitoringData(config, config.Used_percent_of_memory, now, 1)
+		// network_usage := getMonitoringData(config, config.network_usage, now, 1)
+		keys := make([]int, 0, len(osdUP))
 		for ts, value := range osdUP {
-			fmt.Println(value, "     ", applyLatency[ts])
-
+			err = asStorage.WriteBin(ts, float64(ts), "Timestamp")
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
+			err = asStorage.WriteBin(ts, value, "osdUP")
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
+			keys = append(keys, ts)
 		}
-
 		time.Sleep(60 * time.Minute)
 
 	}
 
 }
 
-func StoreData(config *configuration.Config) error {
-	asStorage, err := aerospike.NewASStorage(config)
+func storeDataset(dataSet map[int]float64, keys []int, binName string, asStorage *storage.ASStorage) error {
+	index := 0
+	for _, value := range dataSet {
+		err := asStorage.WriteBin(keys[index], value, binName)
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
+	}
+	return nil
+}
+
+func testData(config *configuration.Config) error {
+	log.Println(config.AerospikeHost)
+	asStorage, err := storage.CreateClient(config)
 	if err != nil {
+		log.Println("not able to create as Client")
 		return err
 	}
-	asStorage.CreateData(&model.Data{Value: 923847})
+	err = asStorage.WriteBin(1, 1, "test")
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	err = asStorage.WriteBin(1, 11, "test2")
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
 	return err
 }
 
@@ -71,8 +125,9 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		// }
 		value, _ := strconv.ParseFloat(res[1].(string), 64)
 		ts := int(res[0].(float64))
-		fmt.Println(ts, "    ", value)
+		//fmt.Println(ts, "    ", value)
 		data[ts] = value
+		log.Println(value)
 		q.Insert(value)
 
 	}

@@ -13,6 +13,7 @@ TokenEndpoint = "tkn-service.production.svc.cluster.local:80"
 Scopes = ["IKS-V1"]
 Port = ":80"
 
+AerospikeHost = "localhost"
 [AerospikeConfig]
-AerospikeHosts = ["iks-aerospike-0.iks-aerospike","iks-aerospike-1.iks-aerospike","iks-aerospike-2.iks-aerospike","iks-aerospike-3.iks-aerospike"]
+AerospikeHosts = ["localhost"]
 AerospikePort = 3000

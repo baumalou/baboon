@@ -22,6 +22,8 @@ type Config struct {
 	AVG_OSD_APPLY_LATENCY string
 	SamplingStepSize      string
 	AerospikeConfig       *cmn_as_conf.Config
+	AerospikePort         int
+	AerospikeHost         string
 }
 
 func (c *Config) GetAerospikeNamespace() string {
@@ -40,6 +42,7 @@ func getAbsPath() string {
 func PathForConfig() string {
 	env := os.Getenv("ENV")
 	if env != "" {
+		log.Println(getAbsPath() + "/config" + env + ".toml")
 		return getAbsPath() + "/config" + env + ".toml"
 	}
 	return "./configuration/config.toml"
