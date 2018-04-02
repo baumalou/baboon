@@ -1,5 +1,5 @@
 TaskmasterEndpoint = "tm-service:80"
-SamplingStepSize = "10"
+SamplingStepSize = "1"
 MonitoringHost = "https://monitoring.workshop21.ch"
 OSDS_UP_Endpoint = "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"
 AVG_OSD_APPLY_LATENCY = "/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_perf_apply_latency_seconds)"
@@ -7,14 +7,59 @@ BearerToken = "eyJrIjoiU1VBeFpZNzBYUGg4Wm83UjBUZjUxOHI4NFlaWUhYc1ciLCJuIjoidmlld
 
 AerospikeHost = "localhost"
 AerospikePort = 3000
+AerospikeNamespace = "test"
 
-[ServiceConfig]
-ServiceName = "IKS-V1"
-ServicePW = "test1234"
-TokenEndpoint = "tkn-service.production.svc.cluster.local:80" 
-Scopes = ["IKS-V1"]
-Port = ":80"
 
-[AerospikeConfig]
-AerospikeHosts = ["localhost"]
-AerospikePort = 3000
+[Endpoints]
+[Endpoints.Endpoint1]
+Name="IOPS_write"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_write_ops"
+[Endpoints.Endpoint2]
+Name="IOPS_read"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_read_ops"
+[Endpoints.Endpoint3]
+Name="Mon_quorum"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_monitor_quorum_count"
+[Endpoints.Endpoint4]
+Name="Av_capacity"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_cluster_available_bytes/ceph_cluster_capacity_bytes"
+[Endpoints.Endpoint5]
+Name="AvMonLat"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_monitor_latency_seconds)"
+[Endpoints.Endpoint6]
+Name="AvOSDappllat"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_perf_apply_latency_seconds)"
+[Endpoints.Endpoint7]
+Name="AvOSDcommlat"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_perf_commit_latency_seconds)"
+[Endpoints.Endpoint8]
+Name="TPwrite"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_write_bytes"
+[Endpoints.Endpoint9]
+Name="TPread"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_read_bytes"
+
+[Endpoints.Endpoint10]
+Name="CEPH_health"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=count(ceph_health_status)"
+[Endpoints.Endpoint11]
+Name="OSDInQuorum"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_osds_in"
+[Endpoints.Endpoint12]
+Name="NumCoresTotal"
+Path="/api/datasources/proxy/4/api/v1/query_range?query=sum%20(machine_cpu_cores%7Binstance%3D~%22%5E.*%24%22%7D)"
+[Endpoints.Endpoint13]
+Name="UsePercOfMem"
+Path="/api/datasources/proxy/4/api/v1/query_range?query=sum%20(container_memory_working_set_bytes%7Bid%3D%22%2F%22%2Cinstance%3D~%22%5E.*%24%22%7D)%20%2F%20sum%20(machine_memory_bytes%7Binstance%3D~%22%5E.*%24%22%7D)%20*%20100"
+[Endpoints.Endpoint14]
+Name="networkReceive"
+Path="/api/datasources/proxy/4/api/v1/query_range?query=sum%20(rate%20(container_network_receive_bytes_total%7Binstance%3D~%22%5E.*%24%22%7D%5B1m%5D))"
+[Endpoints.Endpoint15]
+Name="networkSend"
+Path="/api/datasources/proxy/4/api/v1/query_range?query=sum%20(rate%20(container_network_transmit_bytes_total%7Binstance%3D~%22%5E.*%24%22%7D%5B1m%5D))"
+[Endpoints.Endpoint16]
+Name="NumCoresUsed"
+Path="/api/datasources/proxy/4/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bid%3D%22%2F%22%2Cinstance%3D~%22%5E.*%24%22%7D%5B1m%5D))"
+[Endpoints.Endpoint17]
+Name="OSD_UP"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"

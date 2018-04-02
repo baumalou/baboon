@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	ASNamespace = "iks"
+	ASNamespace = "ba"
 )
 
 type Config struct {
@@ -24,6 +24,12 @@ type Config struct {
 	AerospikeConfig       *cmn_as_conf.Config
 	AerospikePort         int
 	AerospikeHost         string
+	Endpoints             map[string]Endpoint
+	AerospikeNamespace    string
+}
+type Endpoint struct {
+	Name string
+	Path string
 }
 
 func (c *Config) GetAerospikeNamespace() string {

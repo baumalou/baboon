@@ -37,35 +37,27 @@ func main() {
 
 	for {
 		now := int(time.Now().Unix())
-		osdUP := getMonitoringData(config, config.OSDS_UP_Endpoint, now, 1)
-		//applyLatency := getMonitoringData(config, config.AVG_OSD_APPLY_LATENCY, now, 1)
-		// IOPS_read := getMonitoringData(config, config.IOPS_read, now, 1)
-		// IOPS_write := getMonitoringData(config, config.IOPS_write, now, 1)
-		// Monitors_quorum := getMonitoringData(config, config.Monitors_quorum, now, 1)
-		// Available_capacity := getMonitoringData(config, config.Available_capacity, now, 1)
-		// AverageMonitorLatency := getMonitoringData(config, config.AverageMonitorLatency, now, 1)
-		// Average_OSD_apply_latency := getMonitoringData(config, config.Average_OSD_apply_latency, now, 1)
-		// Average_OSD_commit_latency := getMonitoringData(config, config.Average_OSD_commit_latency, now, 1)
-		// Throughput_write := getMonitoringData(config, config.Throughput_write, now, 1)
-		// Throughput_read := getMonitoringData(config, config.Throughput_read, now, 1)
-		// CEPH_health := getMonitoringData(config, config.CEPH_health, now, 1)
-		// OSD_Orphans := getMonitoringData(config, config.OSD_Orphans, now, 1)
-		// Used_percent_of_cores := getMonitoringData(config, config.Used_percent_of_cores, now, 1)
-		// Used_percent_of_memory := getMonitoringData(config, config.Used_percent_of_memory, now, 1)
-		// network_usage := getMonitoringData(config, config.network_usage, now, 1)
-		keys := make([]int, 0, len(osdUP))
-		for ts, value := range osdUP {
-			err = asStorage.WriteBin(ts, float64(ts), "Timestamp")
-			if err != nil {
-				log.Println(err.Error())
-				return
+		datasets := map[string]map[int]float64{}
+		var keys []int
+		log.Println()
+		for _, endpoint := range config.Endpoints {
+			datasets[endpoint.Name] = getMonitoringData(config, endpoint.Path, now, 1)
+			time.Sleep(100 * time.Millisecond)
+		}
+
+		for _, v := range datasets {
+			keys = make([]int, 0, len(v))
+			for ts, _ := range v {
+				keys = append(keys, ts)
 			}
-			err = asStorage.WriteBin(ts, value, "osdUP")
+			break
+		}
+
+		for k, v := range datasets {
+			err = storeDataset(v, keys, k, asStorage)
 			if err != nil {
-				log.Println(err.Error())
-				return
+				log.Fatal("some shit happened!!!!", k)
 			}
-			keys = append(keys, ts)
 		}
 		time.Sleep(60 * time.Minute)
 
@@ -76,33 +68,18 @@ func main() {
 func storeDataset(dataSet map[int]float64, keys []int, binName string, asStorage *storage.ASStorage) error {
 	index := 0
 	for _, value := range dataSet {
+		if len(keys) <= index {
+			log.Println(len(keys), index)
+			return nil
+		}
 		err := asStorage.WriteBin(keys[index], value, binName)
+		index++
 		if err != nil {
 			log.Println(err.Error())
 			return err
 		}
 	}
 	return nil
-}
-
-func testData(config *configuration.Config) error {
-	log.Println(config.AerospikeHost)
-	asStorage, err := storage.CreateClient(config)
-	if err != nil {
-		log.Println("not able to create as Client")
-		return err
-	}
-	err = asStorage.WriteBin(1, 1, "test")
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-	err = asStorage.WriteBin(1, 11, "test2")
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-	return err
 }
 
 func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) map[int]float64 {
@@ -127,7 +104,11 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		ts := int(res[0].(float64))
 		//fmt.Println(ts, "    ", value)
 		data[ts] = value
-		log.Println(value)
+		if value == 0 {
+			log.Println(value, endpoint)
+			return data
+		}
+
 		q.Insert(value)
 
 	}
@@ -163,7 +144,7 @@ func getGrafanaResultset(config *configuration.Config, endpoint string, timeStam
 	}
 	if resp.StatusCode != 200 {
 		logging.WithID("PERF-OP-h97843f7").Error(resp.Status, err)
-		return result, errors.New("request failed with error: " + resp.Status)
+		return result, errors.New("request failed with error: " + resp.Status + "    " + url)
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)

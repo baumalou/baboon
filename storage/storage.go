@@ -14,6 +14,7 @@ type ASStorage struct {
 	Client  *as.Client
 	Policy  *as.BasePolicy
 	WPolicy *as.WritePolicy
+	Config  *configuration.Config
 }
 
 type MonitorRecord struct {
@@ -40,7 +41,7 @@ type MonitorBin struct {
 
 func CreateClient(config *configuration.Config) (*ASStorage, error) {
 	log.Println(config.AerospikeHost, config.AerospikePort)
-	asClient, err := as.NewClient("localhost", 3000)
+	asClient, err := as.NewClient(config.AerospikeHost, config.AerospikePort)
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -48,7 +49,7 @@ func CreateClient(config *configuration.Config) (*ASStorage, error) {
 	policy.Timeout = 100 * time.Millisecond
 	wPolicy := as.NewWritePolicy(0, 0)
 	wPolicy.Timeout = 100 * time.Millisecond
-	return &ASStorage{Client: asClient, Policy: policy, WPolicy: wPolicy}, err
+	return &ASStorage{Client: asClient, Policy: policy, WPolicy: wPolicy, Config: config}, err
 }
 
 func (s ASStorage) WriteBin(key int, value float64, bin string) error {
@@ -80,7 +81,7 @@ func (s ASStorage) WriteBin(key int, value float64, bin string) error {
 // }
 
 func (s ASStorage) GetKey(val string) (*as.Key, error) {
-	key, err := as.NewKey("test", "set",
+	key, err := as.NewKey(s.Config.AerospikeNamespace, "set",
 		val)
 	if err != nil {
 		log.Println(err)
