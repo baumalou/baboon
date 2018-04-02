@@ -56,7 +56,7 @@ func main() {
 		for k, v := range datasets {
 			err = storeDataset(v, keys, k, asStorage)
 			if err != nil {
-				log.Fatal("some shit happened!!!!", k)
+				log.Println("some shit happened!!!!", k)
 			}
 		}
 		time.Sleep(60 * time.Minute)
