@@ -76,7 +76,6 @@ func storeDataset(dataSet map[int]float64, keys []int, binName string, asStorage
 		index++
 		if err != nil {
 			log.Println(err.Error())
-			return err
 		}
 	}
 	return nil
