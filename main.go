@@ -47,8 +47,9 @@ func main() {
 
 		for _, v := range datasets {
 			keys = make([]int, 0, len(v))
-			for ts, _ := range v {
+			for ts := range v {
 				keys = append(keys, ts)
+				asStorage.WriteBin(ts, float64(ts), "Timestamp")
 			}
 			break
 		}
@@ -69,13 +70,13 @@ func storeDataset(dataSet map[int]float64, keys []int, binName string, asStorage
 	index := 0
 	for _, value := range dataSet {
 		if len(keys) <= index {
-			log.Println(len(keys), index)
+			logging.WithID("BA-OPERATOR-storeDataset-01").Println(len(keys), index, "index exceeds")
 			return nil
 		}
 		err := asStorage.WriteBin(keys[index], value, binName)
 		index++
 		if err != nil {
-			log.Println(err.Error())
+			logging.WithID("BA-OPERATOR-storeDataset-02").Println(err.Error(), err)
 		}
 	}
 	return nil
