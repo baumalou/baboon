@@ -103,10 +103,10 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		ts := int(res[0].(float64))
 		//fmt.Println(ts, "    ", value)
 		data[ts] = value
-		if value == 0 {
-			log.Println(value, endpoint)
-			return data
-		}
+		// if value == 0 {
+		// 	log.Println(value, endpoint)
+		// 	return data
+		// }
 
 		q.Insert(value)
 
