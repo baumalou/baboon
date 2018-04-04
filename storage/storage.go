@@ -3,7 +3,6 @@ package storage
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
@@ -49,11 +48,12 @@ func CreateClient(config *configuration.Config) (*ASStorage, error) {
 	policy.Timeout = 100 * time.Millisecond
 	wPolicy := as.NewWritePolicy(0, 0)
 	wPolicy.Timeout = 100 * time.Millisecond
+	wPolicy.SendKey = true
 	return &ASStorage{Client: asClient, Policy: policy, WPolicy: wPolicy, Config: config}, err
 }
 
-func (s ASStorage) WriteBin(key int, value float64, bin string) error {
-	asKey, err := s.GetKey(strconv.Itoa(key))
+func (s ASStorage) WriteBin(key int, value float64, bin string, set string) error {
+	asKey, err := s.GetKey(int64(key), set)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -80,8 +80,8 @@ func (s ASStorage) WriteBin(key int, value float64, bin string) error {
 // 	return s.Client.PutBins(s.WPolicy, asKey, asBins)
 // }
 
-func (s ASStorage) GetKey(val string) (*as.Key, error) {
-	key, err := as.NewKey(s.Config.AerospikeNamespace, "set",
+func (s ASStorage) GetKey(val int64, set string) (*as.Key, error) {
+	key, err := as.NewKey(s.Config.AerospikeNamespace, set,
 		val)
 	if err != nil {
 		log.Println(err)
@@ -89,8 +89,8 @@ func (s ASStorage) GetKey(val string) (*as.Key, error) {
 	return key, err
 }
 
-func (s ASStorage) ReadRecord(key int) (*as.Record, error) {
-	asKey, err := s.GetKey(strconv.Itoa(key))
+func (s ASStorage) ReadRecord(key int, set string) (*as.Record, error) {
+	asKey, err := s.GetKey(int64(key), set)
 	if err != nil {
 		return nil, err
 	}

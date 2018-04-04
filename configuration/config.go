@@ -26,6 +26,7 @@ type Config struct {
 	AerospikeHost         string
 	Endpoints             map[string]Endpoint
 	AerospikeNamespace    string
+	Percentiles           []int
 }
 type Endpoint struct {
 	Name string

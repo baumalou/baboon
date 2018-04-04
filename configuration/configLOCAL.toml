@@ -9,6 +9,7 @@ AerospikeHost = "localhost"
 AerospikePort = 3000
 AerospikeNamespace = "test"
 
+Percentiles = [1,10,25,50,75,80,90,95,99]
 
 [Endpoints]
 [Endpoints.Endpoint1]
