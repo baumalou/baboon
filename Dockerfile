@@ -21,11 +21,12 @@ ADD main /app/main
 RUN chmod +x /app/main
 ADD go-wrapper /usr/local/bin/
 RUN chmod +x /usr/local/bin/go-wrapper
-RUN chmod -R +rwx /app
 RUN mkdir -p /app/configuration
 ADD configuration/* /app/configuration/
 RUN mkdir -p /app/fio
-ADD fio/* /app/fio/
+
+ADD fio /app/
+RUN chmod -R +rwx /app
 WORKDIR /app/
 ENTRYPOINT [ "/app/main" ]
 

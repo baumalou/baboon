@@ -69,7 +69,7 @@ release:docker:
 deploy-into-staging:
   stage: deploy-staging
   environment: staging
-  image: docker.workshop21.ch/boilerplate/deploy/deploy:latest
+  image: docker.workshop21.ch/boilerplate/deploy/deploy_ba:latest
   <<: *export
   script:
    - /main.sh
