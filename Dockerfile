@@ -24,8 +24,7 @@ RUN chmod +x /usr/local/bin/go-wrapper
 RUN mkdir -p /app/configuration
 ADD configuration/* /app/configuration/
 RUN mkdir -p /app/fio
-
-ADD fio /app/
+ADD fio /app/fio
 RUN chmod -R +rwx /app
 WORKDIR /app/
 ENTRYPOINT [ "/app/main" ]

@@ -1,5 +1,5 @@
 [global]
-ioengine=rados
+
 iodepth=32
 direct=1
 runtime=60

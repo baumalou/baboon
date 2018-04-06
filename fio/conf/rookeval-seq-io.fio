@@ -1,10 +1,10 @@
 [global]
-ioengine=rados
+
 iodepth=32
 direct=1
 runtime=60
 invalidate=1
-size=1G
+size=100M
 directory=${DIR}
 filename=fio-test.file
 
@@ -12,14 +12,14 @@ filename=fio-test.file
 bs=${SIZE}
 rw=read
 stonewall
-write_bw_log=${SIZE}-seq-read-${DATE}.results
-write_iops_log=${SIZE}-seq-read-${DATE}.results
-write_lat_log=${SIZE}-seq-read-${DATE}.results
+/app/log/write_bw_log=${SIZE}-seq-read-${DATE}.results
+/app/log/write_iops_log=${SIZE}-seq-read-${DATE}.results
+/app/log/write_lat_log=${SIZE}-seq-read-${DATE}.results
 
 [seq-write]
 bs=${SIZE}
 rw=write
 stonewall
-write_bw_log=${SIZE}-seq-write-${DATE}.results
-write_iops_log=${SIZE}-seq-write-${DATE}.results
-write_lat_log=${SIZE}-seq-write-${DATE}.results
+/app/log/write_bw_log=${SIZE}-seq-write-${DATE}.results
+/app/log/write_iops_log=${SIZE}-seq-write-${DATE}.results
+/app/log/write_lat_log=${SIZE}-seq-write-${DATE}.results
