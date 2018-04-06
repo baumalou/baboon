@@ -40,7 +40,7 @@ func main() {
 	for {
 		now := int(time.Now().Unix())
 		datasets := map[string]map[int]float64{}
-		var keys []int
+		//var keys []int
 		log.Println()
 		for _, endpoint := range config.Endpoints {
 			datasets[endpoint.Name] = getMonitoringData(config, endpoint.Path, now, 1)
