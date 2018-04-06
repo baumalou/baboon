@@ -11,6 +11,8 @@ AerospikeHost = "ba-aerospike-0.ba-aerospike"
 AerospikePort = 3000
 AerospikeNamespace = "ba"
 
+Percentiles = [1,10,25,50,75,80,90,95,99]
+
 [Endpoints]
 [Endpoints.Endpoint1]
 Name="IOPS_write"

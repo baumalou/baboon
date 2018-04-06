@@ -44,7 +44,7 @@ func main() {
 			datasets[endpoint.Name] = getMonitoringData(config, endpoint.Path, now, 1)
 			time.Sleep(100 * time.Millisecond)
 		}
-
+/*
 		for _, v := range datasets {
 			keys = make([]int, 0, len(v))
 			for ts := range v {
@@ -60,6 +60,7 @@ func main() {
 				log.Println("some shit happened!!!!", k)
 			}
 		}
+		*/
 		time.Sleep(60 * time.Minute)
 
 	}
