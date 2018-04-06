@@ -29,11 +29,13 @@ func main() {
 	// 	log.Fatal("went wrong!")
 	// }
 	//testing purpose:
+	/*
 	asStorage, err := storage.CreateClient(config)
 	if err != nil {
 		log.Println("not able to create as CLient")
 		return
 	}
+	*/
 
 	for {
 		now := int(time.Now().Unix())
