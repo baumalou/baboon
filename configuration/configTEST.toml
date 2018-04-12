@@ -5,6 +5,9 @@ OSDS_UP_Endpoint = "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_o
 AVG_OSD_APPLY_LATENCY = "/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_perf_apply_latency_seconds)"
 BearerToken = "eyJrIjoiU1VBeFpZNzBYUGg4Wm83UjBUZjUxOHI4NFlaWUhYc1ciLCJuIjoidmlld2VyIiwiaWQiOjF9"
 
+WebPort   =            "8080"
+WebPath  =             "/tmp"
+
 [Endpoints]
     [Endpoint1]
         Name = "IOPS_write"

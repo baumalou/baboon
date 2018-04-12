@@ -15,6 +15,7 @@ import (
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/model"
 	"git.workshop21.ch/workshop21/ba/operator/storage"
+	"git.workshop21.ch/workshop21/ba/operator/web"
 	"github.com/bmizerany/perks/quantile"
 )
 
@@ -24,17 +25,18 @@ func main() {
 	if err != nil {
 		logging.WithID("PERF-OP-1").Fatal(err)
 	}
+	go web.Serve(config)
 	// err = testData(config)
 	// if err != nil {
 	// 	log.Fatal("went wrong!")
 	// }
 	//testing purpose:
 	/*
-	asStorage, err := storage.CreateClient(config)
-	if err != nil {
-		log.Println("not able to create as CLient")
-		return
-	}
+		asStorage, err := storage.CreateClient(config)
+		if err != nil {
+			log.Println("not able to create as CLient")
+			return
+		}
 	*/
 
 	for {
@@ -46,22 +48,22 @@ func main() {
 			datasets[endpoint.Name] = getMonitoringData(config, endpoint.Path, now, 1)
 			time.Sleep(100 * time.Millisecond)
 		}
-/*
-		for _, v := range datasets {
-			keys = make([]int, 0, len(v))
-			for ts := range v {
-				keys = append(keys, ts)
-				asStorage.WriteBin(ts, float64(ts), "Timestamp", "set")
+		/*
+			for _, v := range datasets {
+				keys = make([]int, 0, len(v))
+				for ts := range v {
+					keys = append(keys, ts)
+					asStorage.WriteBin(ts, float64(ts), "Timestamp", "set")
+				}
+				break
 			}
-			break
-		}
 
-		for k, v := range datasets {
-			err = storeDataset(v, keys, k, asStorage, "set")
-			if err != nil {
-				log.Println("some shit happened!!!!", k)
+			for k, v := range datasets {
+				err = storeDataset(v, keys, k, asStorage, "set")
+				if err != nil {
+					log.Println("some shit happened!!!!", k)
+				}
 			}
-		}
 		*/
 		time.Sleep(60 * time.Minute)
 

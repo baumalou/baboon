@@ -27,6 +27,8 @@ type Config struct {
 	Endpoints             map[string]Endpoint
 	AerospikeNamespace    string
 	Percentiles           []int
+	WebPort               string
+	WebPath               string
 }
 type Endpoint struct {
 	Name string

@@ -11,6 +11,9 @@ AerospikeNamespace = "test"
 
 Percentiles = [1,10,25,50,75,80,90,95,99]
 
+WebPort   =            "8080"
+WebPath  =             "/tmp"
+
 [Endpoints]
 [Endpoints.Endpoint1]
 Name="IOPS_write"
