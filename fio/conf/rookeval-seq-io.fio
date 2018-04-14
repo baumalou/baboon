@@ -12,14 +12,14 @@ filename=fio-test.file
 bs=${SIZE}
 rw=read
 stonewall
-/app/log/write_bw_log=${SIZE}-seq-read-${DATE}.results
-/app/log/write_iops_log=${SIZE}-seq-read-${DATE}.results
-/app/log/write_lat_log=${SIZE}-seq-read-${DATE}.results
+write_bw_log=/app/log/${SIZE}-seq-read-${DATE}.results
+write_iops_log=/app/log/${SIZE}-seq-read-${DATE}.results
+write_lat_log=/app/log/${SIZE}-seq-read-${DATE}.results
 
 [seq-write]
 bs=${SIZE}
 rw=write
 stonewall
-/app/log/write_bw_log=${SIZE}-seq-write-${DATE}.results
-/app/log/write_iops_log=${SIZE}-seq-write-${DATE}.results
-/app/log/write_lat_log=${SIZE}-seq-write-${DATE}.results
+write_bw_log=/app/log/${SIZE}-seq-write-${DATE}.results
+write_iops_log=/app/log/${SIZE}-seq-write-${DATE}.results
+write_lat_log=/app/log/${SIZE}-seq-write-${DATE}.results

@@ -54,7 +54,7 @@ func PathForConfig() string {
 		log.Println(getAbsPath() + "/config" + env + ".toml")
 		return getAbsPath() + "/config" + env + ".toml"
 	}
-	return "./configuration/config.toml"
+	return "/app/fio/configuration/config.toml"
 }
 
 func ReadConfig(config *Config) (*Config, error) {

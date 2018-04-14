@@ -12,14 +12,14 @@ filename=fio-test.file
 bs=${SIZE}
 rw=randread
 stonewall
-/app/log/write_bw_log=${SIZE}-rand-read-${DATE}.results
-/app/log/write_iops_log=${SIZE}-rand-read-${DATE}.results
-/app/log/write_lat_log=${SIZE}-rand-read-${DATE}.results
+write_bw_log=/app/log/${SIZE}-rand-read-${DATE}.results
+write_iops_log=/app/log/${SIZE}-rand-read-${DATE}.results
+write_lat_log=/app/log/${SIZE}-rand-read-${DATE}.results
 
 [rand-write]
 bs=${SIZE}
 rw=randwrite
 stonewall
-/app/log/write_bw_log=${SIZE}-rand-write-${DATE}.results
-/app/log/write_iops_log=${SIZE}-rand-write-${DATE}.results
-/app/log/write_lat_log=${SIZE}-rand-write-${DATE}.results
+write_bw_log=/app/log/${SIZE}-rand-write-${DATE}.results
+write_iops_log=/app/log/${SIZE}-rand-write-${DATE}.results
+write_lat_log=/app/log/${SIZE}-rand-write-${DATE}.results
