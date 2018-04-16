@@ -13,6 +13,7 @@ import (
 
 	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
+	fio "git.workshop21.ch/workshop21/ba/operator/fio-go"
 	"git.workshop21.ch/workshop21/ba/operator/model"
 	"git.workshop21.ch/workshop21/ba/operator/storage"
 	"git.workshop21.ch/workshop21/ba/operator/web"
@@ -42,6 +43,8 @@ func main() {
 	for {
 		now := int(time.Now().Unix())
 		datasets := map[string]map[int]float64{}
+		runClassifier()
+		time.Sleep(60 * time.Second)
 		//var keys []int
 		log.Println()
 		for _, endpoint := range config.Endpoints {
@@ -69,6 +72,11 @@ func main() {
 
 	}
 
+}
+
+func runClassifier() {
+	fio.RunSmall()
+	fio.FioGenPlot()
 }
 
 func storeDataset(dataSet map[int]float64, keys []int, binName string, asStorage *storage.ASStorage, set string) error {
