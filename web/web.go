@@ -16,5 +16,5 @@ func Serve(config *configuration.Config) {
 	http.Handle("/", http.FileServer(http.Dir(directory)))
 
 	log.Printf("Serving %s on HTTP port: %s\n", directory, port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Println(http.ListenAndServe(":"+port, nil))
 }
