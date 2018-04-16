@@ -98,7 +98,8 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 	logging.WithID("PERF-OP-0h8943o483f4o8").Info(result.Status)
 
 	// Compute the 50th, 90th, and 99th percentile.
-	q := quantile.NewTargeted(0.50, 0.90, 0.99)
+
+	q := quantile.NewTargeted(0.01, 0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95, 0.99)
 	data := make(map[int]float64)
 	for _, res := range result.Data.Result[0].Values {
 		// tm := time.Unix(int64(res[0].(float64)), 0)
@@ -118,9 +119,9 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 
 	}
 
-	fmt.Println("perc50:", q.Query(0.50))
-	fmt.Println("perc90:", q.Query(0.90))
-	fmt.Println("perc99:", q.Query(0.99))
+	for _, percentile := range config.Percentiles {
+		fmt.Println(percentile, q.Query(percentile))
+	}
 	fmt.Println("count:", q.Count())
 
 	return data

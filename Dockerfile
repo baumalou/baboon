@@ -7,7 +7,7 @@ ENV GOROOT /go
 ENV GOPATH /go/src
 
 RUN apt-get update -y && apt-get install wget git -y &&  \
-    apt-get install fio -y && gnuplot && \
+    apt-get install fio gnuplot -y && \
     cd / && wget https://storage.googleapis.com/golang/go${GOVERSION}.linux-amd64.tar.gz && \
     tar zxf go${GOVERSION}.linux-amd64.tar.gz && rm go${GOVERSION}.linux-amd64.tar.gz && \
     ln -s /go/bin/go /usr/bin/ && \

@@ -14,7 +14,7 @@ AerospikeNamespace = "ba"
 WebPort   =            "80"
 WebPath  =             "/app/pictures"
 
-Percentiles = [1,10,25,50,75,80,90,95,99]
+Percentiles = [0.01,0.10,0.25,0.50,0.75,0.80,0.90,0.95,0.99]
 
 [Endpoints]
 [Endpoints.Endpoint1]
