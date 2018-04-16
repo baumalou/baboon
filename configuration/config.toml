@@ -5,7 +5,7 @@ OSDS_UP_Endpoint = "/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_o
 x = "/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_read_ops"
 CEPH_IO_WRITE_OPS = "/api/datasources/proxy/1/api/v1/query_range?query=ceph_client_io_write_ops"
 AVG_OSD_APPLY_LATENCY = "/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_perf_apply_latency_seconds)"
-BearerToken = "eyJrIjoiU1VBeFpZNzBYUGg4Wm83UjBUZjUxOHI4NFlaWUhYc1ciLCJuIjoidmlld2VyIiwiaWQiOjF9"
+BearerToken = "eyJrIjoiNUpKelUyZjRnYUpHUWcxbDB3RUN3ZXhBalFsT1pGWkEiLCJuIjoibW9uaXRvcmluZyIsImlkIjoxfQ=="
 
 AerospikeHost = "ba-aerospike-0.ba-aerospike"
 AerospikePort = 3000

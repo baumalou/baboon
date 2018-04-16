@@ -20,3 +20,16 @@ kei fragmentation
 von hand eingetragen / regex 
 
 aktuell master version von rook 0.7.0.XX
+
+
+## storage class
+
+```
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: rook-test
+provisioner: rook.io/block
+parameters:
+  pool: block-repl-low
+```
