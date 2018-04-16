@@ -1,5 +1,7 @@
 package model
 
+import "github.com/hishboy/gocommons/lang"
+
 type GrafanaResult struct {
 	Status string `json:"status"`
 	Data   struct {
@@ -16,4 +18,9 @@ type Data struct {
 	Bin       string
 	Timestamp int
 	Value     float64
+}
+
+type Dataset struct {
+	Set   map[int]float64
+	Queue *lang.Queue
 }
