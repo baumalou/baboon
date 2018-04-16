@@ -8,3 +8,4 @@ fio_generate_plots "$(date +%F_%T)"
 mv *.svg /app/pictures
 fio2gnuplot -p "*results_bw*" -g
 mv *.png /app/pictures
+rm /app/log/*
