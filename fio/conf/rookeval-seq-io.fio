@@ -1,12 +1,15 @@
 [global]
 
+ioengine=libaio
+ramp_time=5
+runtime=30
 iodepth=32
 direct=1
-runtime=60
 invalidate=1
 size=100M
 directory=${DIR}
 filename=fio-test.file
+time_based
 
 [seq-read]
 bs=${SIZE}

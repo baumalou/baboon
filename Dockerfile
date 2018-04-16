@@ -13,7 +13,7 @@ RUN apt-get update -y && apt-get install wget git -y &&  \
     ln -s /go/bin/go /usr/bin/ && \
     ls /go
 
-RUN mkdir -p /app && mkdir -p /app/configuration && mkdir -p /app/pictures && mkdir -p /app/fio
+RUN mkdir -p /app && mkdir -p /app/configuration && mkdir -p /app/pictures && mkdir -p /app/fio && mkdir /app/log
 ADD rookctl /usr/local/bin/rookctl
 RUN chmod +x /usr/local/bin/rookctl
 ADD .git-credentials /
