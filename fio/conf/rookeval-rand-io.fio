@@ -15,14 +15,14 @@ time_based
 bs=${SIZE}
 rw=randread
 stonewall
-write_bw_log=/app/log/${SIZE}-rand-read-${DATE}.results
-write_iops_log=/app/log/${SIZE}-rand-read-${DATE}.results
-write_lat_log=/app/log/${SIZE}-rand-read-${DATE}.results
+write_bw_log=/app/log/${SIZE}-rand-read.results
+write_iops_log=/app/log/${SIZE}-rand-read.results
+write_lat_log=/app/log/${SIZE}-rand-read.results
 
 [rand-write]
 bs=${SIZE}
 rw=randwrite
 stonewall
-write_bw_log=/app/log/${SIZE}-rand-write-${DATE}.results
-write_iops_log=/app/log/${SIZE}-rand-write-${DATE}.results
-write_lat_log=/app/log/${SIZE}-rand-write-${DATE}.results
+write_bw_log=/app/log/${SIZE}-rand-write.results
+write_iops_log=/app/log/${SIZE}-rand-write.results
+write_lat_log=/app/log/${SIZE}-rand-write.results

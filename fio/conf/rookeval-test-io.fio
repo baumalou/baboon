@@ -13,14 +13,14 @@ time_based
 bs=${SIZE}
 rw=read
 stonewall
-write_bw_log=/app/log/${SIZE}-seq-read-${DATE}.results
-write_iops_log=/app/log/${SIZE}-seq-read-${DATE}.results
-write_lat_log=/app/log/${SIZE}-seq-read-${DATE}.results
+write_bw_log=/app/log/${SIZE}-seq-read.results
+write_iops_log=/app/log/${SIZE}-seq-read.results
+write_lat_log=/app/log/${SIZE}-seq-read.results
 
 [seq-write]
 bs=${SIZE}
 rw=write
 stonewall
-write_bw_log=/app/log/${SIZE}-seq-write-${DATE}.results
-write_iops_log=/app/log/${SIZE}-seq-write-${DATE}.results
-write_lat_log=/app/log/${SIZE}-seq-write-${DATE}.results
+write_bw_log=/app/log/${SIZE}-seq-write.results
+write_iops_log=/app/log/${SIZE}-seq-write.results
+write_lat_log=/app/log/${SIZE}-seq-write.results
