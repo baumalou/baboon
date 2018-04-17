@@ -2,7 +2,6 @@ package queue
 
 type Dataset struct {
 	Name  string
-	Set   []MetricTupel
 	Queue *MetricQueue
 }
 type MetricTupel struct {
@@ -28,6 +27,12 @@ func (mq *MetricQueue) removeOldestItem() MetricTupel {
 }
 
 func (mq *MetricQueue) AddMonitoringTupelSliceToDataset(tupelArray []MetricTupel) {
+	for _, tupel := range tupelArray {
+		mq.Push(tupel)
+		mq.Pop()
+	}
+}
+func (mq *MetricQueue) InsertMonitoringTupelInQueue(tupelArray []MetricTupel) {
 	for _, tupel := range tupelArray {
 		mq.Push(tupel)
 	}

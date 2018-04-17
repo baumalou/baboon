@@ -14,8 +14,20 @@ func MonitorCluster(config *configuration.Config) {
 	datasets := map[string]queue.Dataset{}
 	fillDataset(&datasets, config)
 	for _, endpoint := range config.Endpoints {
-		getQuantiles(datasets[endpoint.Name].Set, config)
+		getQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
+	for {
+		now := int(time.Now().Unix())
+		for _, endpoint := range config.Endpoints {
+			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
+			time.Sleep(10 * time.Second)
+		}
+	}
+}
+
+func monitorRoutine(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int) {
+	data := getMonitoringData(config, endpoint, timeTo, config.SampleInterval)
+	mq.AddMonitoringTupelSliceToDataset(data)
 }
 
 func fillDataset(datasets *map[string]queue.Dataset, config *configuration.Config) {
@@ -28,7 +40,7 @@ func fillDataset(datasets *map[string]queue.Dataset, config *configuration.Confi
 		// for timestamp, val := range data {
 		// 	queue.Push(queue.MetricTupel{Timestamp: timestamp, Value: val})
 		// }
-		monQueue.AddMonitoringTupelSliceToDataset(data)
+		monQueue.InsertMonitoringTupelInQueue(data)
 		(*datasets)[endpoint.Name] = queue.Dataset{Queue: monQueue, Name: endpoint.Name}
 
 		time.Sleep(100 * time.Millisecond)
