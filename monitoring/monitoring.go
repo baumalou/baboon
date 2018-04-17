@@ -15,16 +15,24 @@ import (
 
 func MonitorCluster(config *configuration.Config) {
 	datasets := map[string]model.Dataset{}
+	fillDataset(&datasets, config)
+	for _, endpoint := range config.Endpoints {
+		getQuantiles(datasets[endpoint.Name].Set, config)
+	}
+}
+
+func fillDataset(datasets *map[string]model.Dataset, config *configuration.Config) {
 	now := int(time.Now().Unix())
 	for _, endpoint := range config.Endpoints {
+
 		data := getMonitoringData(config, endpoint.Path, now, 3600)
 
-		datasets[endpoint.Name] = model.Dataset{Set: data}
 		queue := lang.NewQueue()
-		for _, val := range data {
-			queue.Push(val)
+		for timestamp, val := range data {
+			queue.Push(model.MetricTupel{Timestamp: timestamp, Value: val})
 		}
-		getQuantiles(data, config)
+		(*datasets)[endpoint.Name] = model.Dataset{Set: data, Queue: queue}
+
 		time.Sleep(100 * time.Millisecond)
 	}
 }

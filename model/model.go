@@ -24,3 +24,8 @@ type Dataset struct {
 	Set   map[int]float64
 	Queue *lang.Queue
 }
+
+type MetricTupel struct {
+	Timestamp int
+	Value     float64
+}
