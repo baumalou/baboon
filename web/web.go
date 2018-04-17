@@ -40,9 +40,7 @@ func Serve(config *configuration.Config) {
 	directory := config.WebPath
 	flag.Parse()
 	router := mux.NewRouter()
-	router.PathPrefix("/images/").Handler(
-		http.StripPrefix("/images/", http.FileServer(http.Dir(directory)))
-	)
+	router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir(directory))))
 	router.HandleFunc("/run/{size}", RunSmall).Methods("GET")
 	logging.WithID("BA-OPERATOR-FILESERV-001").Printf("Serving %s on HTTP port: %s\n", directory, port)
 	logging.WithID("BA-OPERATOR-FILESERV-FATAL").Errorln(http.ListenAndServe(":"+port, router))
