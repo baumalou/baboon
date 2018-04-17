@@ -10,6 +10,6 @@ const (
 	ERROR
 )
 
-func VerifyClusterStatus(dataset map[string]queue.Dataset) Status {
-	return HEALTHY
+func VerifyClusterStatus(dataset map[string]queue.Dataset) (Status, error) {
+	return HEALTHY, nil
 }

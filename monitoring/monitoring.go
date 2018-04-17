@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"git.workshop21.ch/ewa/common/go/abraxas/logging"
+	verifier "git.workshop21.ch/workshop21/ba/operator/cluster-verifier"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
 	"github.com/bmizerany/perks/quantile"
@@ -22,6 +23,7 @@ func MonitorCluster(config *configuration.Config) {
 		for _, endpoint := range config.Endpoints {
 			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
 		}
+		status, err := verifier.VerifyClusterStatus(datasets)
 		time.Sleep(10 * time.Second)
 	}
 }
