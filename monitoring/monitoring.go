@@ -14,14 +14,16 @@ func MonitorCluster(config *configuration.Config) {
 	datasets := map[string]queue.Dataset{}
 	fillDataset(&datasets, config)
 	for _, endpoint := range config.Endpoints {
+		logging.WithID("BA-OPERATOR-MONITOR-" + endpoint.Name).Println("generating quantiles")
 		getQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
 	for {
 		now := int(time.Now().Unix())
 		for _, endpoint := range config.Endpoints {
 			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
-			time.Sleep(10 * time.Second)
+
 		}
+		time.Sleep(10 * time.Second)
 	}
 }
 
