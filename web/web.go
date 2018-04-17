@@ -51,22 +51,19 @@ func RunSmall(w http.ResponseWriter, r *http.Request) {
 	if running {
 		w.Write([]byte("already process running"))
 		return
-	}
-	if monitoring.VerifyClusterStatus() && params["size"] == "small" {
+	} else if monitoring.VerifyClusterStatus() && params["size"] == "small" {
 		w.Write([]byte("small started"))
 		go runSmallFio()
-	}
-	if monitoring.VerifyClusterStatus() && params["size"] == "medium" {
+	} else if monitoring.VerifyClusterStatus() && params["size"] == "medium" {
 		w.Write([]byte("medium started"))
 		go runSmallFio()
-	}
-	if monitoring.VerifyClusterStatus() && params["size"] == "large" {
+	} else if monitoring.VerifyClusterStatus() && params["size"] == "large" {
 		w.Write([]byte("large started"))
 		go runSmallFio()
 	} else if !monitoring.VerifyClusterStatus() {
 		w.Write([]byte("cluster not ready to run fio"))
 	} else {
-		w.Write([]byte("wrong command to run small!!" + params["size"]))
+		w.Write([]byte("wrong command to run fio!! command:" + params["size"] + " \rpossible commands: small, medium, large"))
 	}
 
 }
