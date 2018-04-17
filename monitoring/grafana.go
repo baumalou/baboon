@@ -18,7 +18,7 @@ func getGrafanaResultset(config *configuration.Config, endpoint string, timeStam
 	startTime := -time.Duration(hoursInPast) * time.Second
 	start := int(time.Now().Add(startTime).Unix())
 	url := config.MonitoringHost + endpoint + "&start=" + strconv.Itoa(start) + "&end=" + strconv.Itoa(timeStampTo) + "&step=" + config.SamplingStepSize
-	logging.WithIDFields("PERF-OP-2").Info(url)
+	logging.WithIDFields("PERF-OP-2").Debug(url)
 	var bearer = "Bearer " + config.BearerToken
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

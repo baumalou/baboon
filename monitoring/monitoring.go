@@ -21,7 +21,6 @@ func MonitorCluster(config *configuration.Config) {
 		now := int(time.Now().Unix())
 		for _, endpoint := range config.Endpoints {
 			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
-
 		}
 		time.Sleep(10 * time.Second)
 	}
@@ -67,7 +66,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		logging.WithError("PERF-OP-h9u349u43", err).Println(err)
 		return nil
 	}
-	logging.WithID("PERF-OP-0h8943o483f4o8").Info(result.Status)
+	logging.WithID("PERF-OP-0h8943o483f4o8").Debug(result.Status)
 
 	// Compute the 50th, 90th, and 99th percentile.
 
