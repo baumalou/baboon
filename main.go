@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"git.workshop21.ch/ewa/common/go/abraxas/logging"
@@ -22,7 +21,6 @@ func main() {
 	runClassifier()
 	time.Sleep(60 * time.Second)
 	//var keys []int
-	log.Println()
 	monitoring.MonitorCluster(config)
 	/*
 		for _, v := range datasets {
