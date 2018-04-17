@@ -3,6 +3,7 @@ package web
 import (
 	"flag"
 	"net/http"
+	"sync"
 
 	"git.workshop21.ch/workshop21/ba/operator/fio-go"
 
@@ -12,6 +13,27 @@ import (
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 )
+
+var mutex *sync.Mutex
+var running bool
+
+func getMutex() *sync.Mutex {
+	if mutex == nil {
+		mutex = &sync.Mutex{}
+	}
+	return mutex
+}
+
+func lockMutex() {
+	running = true
+	logging.WithID("BA-OPERATOR-MUTEX-001").Debug("lock mutex")
+	getMutex().Lock()
+}
+func unlockMutex() {
+	getMutex().Unlock()
+	running = false
+	logging.WithID("BA-OPERATOR-MUTEX-003").Debug("mutex unlocked")
+}
 
 func Serve(config *configuration.Config) {
 	port := config.WebPort
@@ -26,13 +48,22 @@ func Serve(config *configuration.Config) {
 
 func RunSmall(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-
+	if running {
+		w.Write([]byte("already process running"))
+		return
+	}
 	if monitoring.VerifyClusterStatus() && params["size"] == "small" {
 		w.Write([]byte("small started"))
-		go fio.RunSmall()
+		go runSmallFio()
 		//fio.FioGenPlot()
 	} else {
 		w.Write([]byte("cluster not ready to run small"))
 	}
 
+}
+
+func runSmallFio() {
+	lockMutex()
+	defer unlockMutex()
+	fio.RunSmall()
 }
