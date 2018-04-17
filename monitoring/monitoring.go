@@ -1,8 +1,6 @@
 package monitoring
 
 import (
-	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -43,17 +41,16 @@ func getQuantiles(dataset map[int]float64, config *configuration.Config) {
 		q.Insert(value)
 	}
 	for _, percentile := range config.Percentiles {
-		fmt.Println(percentile, q.Query(percentile))
+		logging.WithID("BA-OPERATOR-QUANTILE-001").Println(percentile, q.Query(percentile))
 	}
-	fmt.Println("count:", q.Count())
+	logging.WithID("BA-OPERATOR-QUANTILE-COUNT").Println("count:", q.Count())
 }
 
 func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) map[int]float64 {
 
 	result, err := getGrafanaResultset(config, endpoint, timeStampTo, hoursInPast)
 	if err != nil {
-		logging.WithError("PERF-OP-h9u349u43", err)
-		log.Println(err)
+		logging.WithError("PERF-OP-h9u349u43", err).Println(err)
 		return nil
 	}
 	logging.WithID("PERF-OP-0h8943o483f4o8").Info(result.Status)

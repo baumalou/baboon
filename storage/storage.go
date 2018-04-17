@@ -1,10 +1,10 @@
 package storage
 
 import (
-	"fmt"
 	"log"
 	"time"
 
+	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	as "github.com/aerospike/aerospike-client-go"
 )
@@ -104,7 +104,7 @@ func (s ASStorage) ReadRecord(key int, set string) (*as.Record, error) {
 			return nil, err
 		}
 
-		fmt.Println(record)
+		logging.WithID("BA-OPERATOR-AS-READRECORD-001").Println(record)
 		return record, err
 
 	}
