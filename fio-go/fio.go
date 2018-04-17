@@ -12,8 +12,9 @@ func RunSmall() error {
 	res, err := bashexecuter.Execute("/app/fio/fio-seq-small.sh")
 	if err != nil && strings.Contains(res, "fail") {
 		logging.WithError("BA-OPERATOR-FIO-SMALL-001", err).Panicln(res)
+		return err
 	}
-	return err
+	return FioGenPlot()
 }
 
 // FioGenPlot creates plots from fio bw files and moves them to /app/pictures

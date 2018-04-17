@@ -29,8 +29,8 @@ func RunSmall(w http.ResponseWriter, r *http.Request) {
 
 	if monitoring.VerifyClusterStatus() && params["size"] == "small" {
 		w.Write([]byte("small started"))
-		fio.RunSmall()
-		fio.FioGenPlot()
+		go fio.RunSmall()
+		//fio.FioGenPlot()
 	} else {
 		w.Write([]byte("cluster not ready to run small"))
 	}
