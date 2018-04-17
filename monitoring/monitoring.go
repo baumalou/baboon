@@ -71,6 +71,10 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 	// Compute the 50th, 90th, and 99th percentile.
 
 	data := make([]queue.MetricTupel, len(result.Data.Result))
+	if len(result.Data.Result) < 1 {
+		logging.WithID("BA-OPERATOR-GETMONDATA").Println("no data received for", endpoint, "result: ", result.Status)
+		return data
+	}
 	for _, res := range result.Data.Result[0].Values {
 		// tm := time.Unix(int64(res[0].(float64)), 0)
 		// if err != nil {
