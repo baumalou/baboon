@@ -34,10 +34,10 @@ func fillDataset(datasets *map[string]model.Dataset, config *configuration.Confi
 	}
 }
 
-func getQuantiles(dataset map[int]float64, config *configuration.Config) {
+func getQuantiles(dataset []model.MetricTupel, config *configuration.Config) {
 	q := quantile.NewTargeted(0.01, 0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95, 0.99)
-	for _, value := range dataset {
-		q.Insert(value)
+	for _, tupel := range dataset {
+		q.Insert(tupel.Value)
 	}
 	for _, percentile := range config.Percentiles {
 		logging.WithID("BA-OPERATOR-QUANTILE-001").Println(percentile, q.Query(percentile))
