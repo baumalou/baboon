@@ -1,10 +1,9 @@
 package storage
 
 import (
-	"fmt"
-	"log"
 	"time"
 
+	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	as "github.com/aerospike/aerospike-client-go"
 )
@@ -39,10 +38,10 @@ type MonitorBin struct {
 }
 
 func CreateClient(config *configuration.Config) (*ASStorage, error) {
-	log.Println(config.AerospikeHost, config.AerospikePort)
+	logging.WithID("BA-OPERATOR-STORAGE-001").Println(config.AerospikeHost, config.AerospikePort)
 	asClient, err := as.NewClient(config.AerospikeHost, config.AerospikePort)
 	if err != nil {
-		log.Println(err.Error())
+		logging.WithError("BA-OPERATOR-QUANTILE-001", err).Println(err)
 	}
 	policy := as.NewPolicy()
 	policy.Timeout = 100 * time.Millisecond
@@ -55,7 +54,7 @@ func CreateClient(config *configuration.Config) (*ASStorage, error) {
 func (s ASStorage) WriteBin(key int, value float64, bin string, set string) error {
 	asKey, err := s.GetKey(int64(key), set)
 	if err != nil {
-		log.Println(err.Error())
+		logging.WithID("BA-OPERATOR-STORAGE-002").Println(err.Error())
 		return err
 	}
 	// Write multiple values.
@@ -84,7 +83,7 @@ func (s ASStorage) GetKey(val int64, set string) (*as.Key, error) {
 	key, err := as.NewKey(s.Config.AerospikeNamespace, set,
 		val)
 	if err != nil {
-		log.Println(err)
+		logging.WithError("BA-OPERATOR-Storage-003", err).Println(err)
 	}
 	return key, err
 }
@@ -104,7 +103,7 @@ func (s ASStorage) ReadRecord(key int, set string) (*as.Record, error) {
 			return nil, err
 		}
 
-		fmt.Println(record)
+		logging.WithID("BA-OPERATOR-AS-READRECORD-001").Println(record)
 		return record, err
 
 	}

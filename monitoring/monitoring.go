@@ -1,8 +1,6 @@
 package monitoring
 
 import (
-	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -15,16 +13,24 @@ import (
 
 func MonitorCluster(config *configuration.Config) {
 	datasets := map[string]model.Dataset{}
+	fillDataset(&datasets, config)
+	for _, endpoint := range config.Endpoints {
+		getQuantiles(datasets[endpoint.Name].Set, config)
+	}
+}
+
+func fillDataset(datasets *map[string]model.Dataset, config *configuration.Config) {
 	now := int(time.Now().Unix())
 	for _, endpoint := range config.Endpoints {
+
 		data := getMonitoringData(config, endpoint.Path, now, 3600)
 
-		datasets[endpoint.Name] = model.Dataset{Set: data}
 		queue := lang.NewQueue()
-		for _, val := range data {
-			queue.Push(val)
+		for timestamp, val := range data {
+			queue.Push(model.MetricTupel{Timestamp: timestamp, Value: val})
 		}
-		getQuantiles(data, config)
+		(*datasets)[endpoint.Name] = model.Dataset{Set: data, Queue: queue}
+
 		time.Sleep(100 * time.Millisecond)
 	}
 }
@@ -35,17 +41,16 @@ func getQuantiles(dataset map[int]float64, config *configuration.Config) {
 		q.Insert(value)
 	}
 	for _, percentile := range config.Percentiles {
-		fmt.Println(percentile, q.Query(percentile))
+		logging.WithID("BA-OPERATOR-QUANTILE-001").Println(percentile, q.Query(percentile))
 	}
-	fmt.Println("count:", q.Count())
+	logging.WithID("BA-OPERATOR-QUANTILE-COUNT").Println("count:", q.Count())
 }
 
 func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) map[int]float64 {
 
 	result, err := getGrafanaResultset(config, endpoint, timeStampTo, hoursInPast)
 	if err != nil {
-		logging.WithError("PERF-OP-h9u349u43", err)
-		log.Println(err)
+		logging.WithError("PERF-OP-h9u349u43", err).Println(err)
 		return nil
 	}
 	logging.WithID("PERF-OP-0h8943o483f4o8").Info(result.Status)

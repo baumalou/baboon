@@ -1,11 +1,11 @@
 package configuration
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 
+	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 	cmn_as_conf "git.workshop21.ch/ewa/common/go/abraxas/storage/aerospike"
 
 	"github.com/BurntSushi/toml"
@@ -51,7 +51,7 @@ func getAbsPath() string {
 func PathForConfig() string {
 	env := os.Getenv("ENV")
 	if env != "" {
-		log.Println(getAbsPath() + "/config" + env + ".toml")
+		logging.WithID("BA-OPERATOR-CONFIG-001").Println(getAbsPath() + "/config" + env + ".toml")
 		return getAbsPath() + "/config" + env + ".toml"
 	}
 	return "./configuration/config.toml"
@@ -60,7 +60,7 @@ func PathForConfig() string {
 func ReadConfig(config *Config) (*Config, error) {
 	if config == nil {
 		if _, err := toml.DecodeFile(PathForConfig(), &config); err != nil {
-			log.Println("Config could not be decoded: ", err)
+			logging.WithID("BA-OPERATOR-CONFIG-002").Println("Config could not be decoded: ", err)
 			return &Config{}, err
 		}
 	}
