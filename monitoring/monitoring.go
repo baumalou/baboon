@@ -8,7 +8,6 @@ import (
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/model"
 	"github.com/bmizerany/perks/quantile"
-	"github.com/hishboy/gocommons/lang"
 )
 
 func MonitorCluster(config *configuration.Config) {
@@ -25,11 +24,11 @@ func fillDataset(datasets *map[string]model.Dataset, config *configuration.Confi
 
 		data := getMonitoringData(config, endpoint.Path, now, 3600)
 
-		queue := lang.NewQueue()
-		for timestamp, val := range data {
-			queue.Push(model.MetricTupel{Timestamp: timestamp, Value: val})
-		}
-		(*datasets)[endpoint.Name] = model.Dataset{Set: data, Queue: queue}
+		//queue := lang.NewQueue()
+		// for timestamp, val := range data {
+		// 	queue.Push(model.MetricTupel{Timestamp: timestamp, Value: val})
+		// }
+		(*datasets)[endpoint.Name] = model.Dataset{Set: data, Name: endpoint.Name}
 
 		time.Sleep(100 * time.Millisecond)
 	}
@@ -46,7 +45,7 @@ func getQuantiles(dataset map[int]float64, config *configuration.Config) {
 	logging.WithID("BA-OPERATOR-QUANTILE-COUNT").Println("count:", q.Count())
 }
 
-func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) map[int]float64 {
+func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) []model.MetricTupel {
 
 	result, err := getGrafanaResultset(config, endpoint, timeStampTo, hoursInPast)
 	if err != nil {
@@ -57,7 +56,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 
 	// Compute the 50th, 90th, and 99th percentile.
 
-	data := make(map[int]float64)
+	data := make([]model.MetricTupel, len(result.Data.Result))
 	for _, res := range result.Data.Result[0].Values {
 		// tm := time.Unix(int64(res[0].(float64)), 0)
 		// if err != nil {
@@ -66,7 +65,7 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 		value, _ := strconv.ParseFloat(res[1].(string), 64)
 		ts := int(res[0].(float64))
 		//fmt.Println(ts, "    ", value)
-		data[ts] = value
+		data = append(data, model.MetricTupel{Timestamp: ts, Value: value})
 		// if value == 0 {
 		// 	log.Println(value, endpoint)
 		// 	return data

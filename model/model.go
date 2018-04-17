@@ -21,7 +21,8 @@ type Data struct {
 }
 
 type Dataset struct {
-	Set   map[int]float64
+	Name  string
+	Set   []MetricTupel
 	Queue *lang.Queue
 }
 
