@@ -2,8 +2,9 @@ package web
 
 import (
 	"flag"
-	"log"
 	"net/http"
+
+	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 )
@@ -15,6 +16,6 @@ func Serve(config *configuration.Config) {
 
 	http.Handle("/", http.FileServer(http.Dir(directory)))
 
-	log.Printf("Serving %s on HTTP port: %s\n", directory, port)
-	log.Println(http.ListenAndServe(":"+port, nil))
+	logging.WithID("BA-OPERATOR-FILESERV-001").Printf("Serving %s on HTTP port: %s\n", directory, port)
+	logging.WithID("BA-OPERATOR-FILESERV-FATAL").Fatal(http.ListenAndServe(":"+port, nil))
 }
