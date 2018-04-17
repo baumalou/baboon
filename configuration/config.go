@@ -29,6 +29,7 @@ type Config struct {
 	Percentiles           []float64
 	WebPort               string
 	WebPath               string
+	SampleInterval        int
 }
 type Endpoint struct {
 	Name string

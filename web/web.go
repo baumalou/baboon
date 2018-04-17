@@ -17,5 +17,5 @@ func Serve(config *configuration.Config) {
 	http.Handle("/", http.FileServer(http.Dir(directory)))
 
 	logging.WithID("BA-OPERATOR-FILESERV-001").Printf("Serving %s on HTTP port: %s\n", directory, port)
-	logging.WithID("BA-OPERATOR-FILESERV-FATAL").Fatal(http.ListenAndServe(":"+port, nil))
+	logging.WithID("BA-OPERATOR-FILESERV-FATAL").Errorln(http.ListenAndServe(":"+port, nil))
 }

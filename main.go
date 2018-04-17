@@ -1,14 +1,17 @@
 package main
 
 import (
-	"time"
-
 	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	fio "git.workshop21.ch/workshop21/ba/operator/fio-go"
 	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 	"git.workshop21.ch/workshop21/ba/operator/web"
+	"github.com/sirupsen/logrus"
 )
+
+func init() {
+	logrus.SetLevel(logrus.DebugLevel)
+}
 
 func main() {
 	logging.WithID("PERF-OP-000").Info("operator started")
@@ -18,8 +21,8 @@ func main() {
 	}
 	go web.Serve(config)
 
-	runClassifier()
-	time.Sleep(60 * time.Second)
+	//runClassifier()
+	//time.Sleep(60 * time.Second)
 	//var keys []int
 	monitoring.MonitorCluster(config)
 	/*

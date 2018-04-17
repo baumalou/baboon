@@ -8,6 +8,7 @@ BearerToken = "eyJrIjoiNUpKelUyZjRnYUpHUWcxbDB3RUN3ZXhBalFsT1pGWkEiLCJuIjoibW9ua
 AerospikeHost = "localhost"
 AerospikePort = 3000
 AerospikeNamespace = "test"
+SampleInterval = 10
 
 Percentiles = [0.01,0.10,0.25,0.50,0.75,0.80,0.90,0.95,0.99]
 

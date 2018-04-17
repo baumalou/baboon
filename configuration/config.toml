@@ -10,6 +10,7 @@ BearerToken = "eyJrIjoiNUpKelUyZjRnYUpHUWcxbDB3RUN3ZXhBalFsT1pGWkEiLCJuIjoibW9ua
 AerospikeHost = "ba-aerospike-0.ba-aerospike"
 AerospikePort = 3000
 AerospikeNamespace = "ba"
+SampleInterval = 10
 
 WebPort   =            "80"
 WebPath  =             "/app/pictures"
