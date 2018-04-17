@@ -19,12 +19,13 @@ func main() {
 	if err != nil {
 		logging.WithID("PERF-OP-1").Fatal(err)
 	}
-	go web.Serve(config)
+	go monitoring.MonitorCluster(config)
 
 	//runClassifier()
 	//time.Sleep(60 * time.Second)
 	//var keys []int
-	monitoring.MonitorCluster(config)
+
+	web.Serve(config)
 	/*
 		for _, v := range datasets {
 			keys = make([]int, 0, len(v))
