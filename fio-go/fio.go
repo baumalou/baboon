@@ -8,8 +8,8 @@ import (
 )
 
 // RunSmall Executes small fio file located in /app/fio
-func RunSmall() error {
-	res, err := bashexecuter.Execute("/app/fio/fio-seq-small.sh")
+func RunFioAndGenPlot(size, mode string) error {
+	res, err := bashexecuter.Execute("/app/fio/fio-" + mode + "-" + size + ".sh")
 	if err != nil && strings.Contains(res, "fail") {
 		logging.WithError("BA-OPERATOR-FIO-SMALL-001", err).Panicln(res)
 		return err

@@ -41,7 +41,7 @@ func Serve(config *configuration.Config) {
 	flag.Parse()
 	router := mux.NewRouter()
 	router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir(directory))))
-	router.HandleFunc("/run/{size}", RunSmall).Methods("GET")
+	router.HandleFunc("/run/{mode}/{size}", RunSmall).Methods("GET")
 	logging.WithID("BA-OPERATOR-FILESERV-001").Printf("Serving %s on HTTP port: %s\n", directory, port)
 	logging.WithID("BA-OPERATOR-FILESERV-FATAL").Errorln(http.ListenAndServe(":"+port, router))
 }
@@ -52,14 +52,12 @@ func RunSmall(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("already process running"))
 		return
 	} else if monitoring.VerifyClusterStatus() && params["size"] == "small" {
-		w.Write([]byte("small started"))
-		go runSmallFio()
+		handleEndpoint(params["mode"], params["size"], w)
+
 	} else if monitoring.VerifyClusterStatus() && params["size"] == "medium" {
-		w.Write([]byte("medium started"))
-		go runSmallFio()
+		handleEndpoint(params["mode"], params["size"], w)
 	} else if monitoring.VerifyClusterStatus() && params["size"] == "large" {
-		w.Write([]byte("large started"))
-		go runSmallFio()
+		handleEndpoint(params["mode"], params["size"], w)
 	} else if !monitoring.VerifyClusterStatus() {
 		w.Write([]byte("cluster not ready to run fio"))
 	} else {
@@ -68,8 +66,21 @@ func RunSmall(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func runSmallFio() {
+func runFio(size, mode string) {
 	lockMutex()
 	defer unlockMutex()
-	fio.RunSmall()
+	fio.RunFioAndGenPlot(size, mode)
+}
+
+func handleEndpoint(mode, size string, w http.ResponseWriter) {
+	if mode == "seq" {
+		w.Write([]byte(mode + " " + size + " started"))
+		go runFio(size, mode)
+		return
+	} else if mode == "rand" {
+		w.Write([]byte(mode + " " + size + " started"))
+		go runFio(size, mode)
+		return
+	}
+	w.Write([]byte("wrong mode.\nallowed modes: seq, rand"))
 }
