@@ -3,7 +3,6 @@ package main
 import (
 	"git.workshop21.ch/ewa/common/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
-	fio "git.workshop21.ch/workshop21/ba/operator/fio-go"
 	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 	"git.workshop21.ch/workshop21/ba/operator/web"
 	"github.com/sirupsen/logrus"
@@ -56,9 +55,4 @@ func main() {
 		}
 	*/
 
-}
-
-func runClassifier() {
-	fio.RunSmall()
-	fio.FioGenPlot()
 }
