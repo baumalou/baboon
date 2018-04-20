@@ -3,6 +3,8 @@ stages:
   - bake
   - bake_release
   - tag
+  - deploy-staging
+  - deploy-pre-production
   - deploy-production
 
 variables:
