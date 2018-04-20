@@ -19,8 +19,9 @@ func NewMetricQueue() *MetricQueue {
 
 func (mq *MetricQueue) removeOldestItem() MetricTupel {
 	if len(mq.Dataset) > 0 {
+		metricTupeToReturn := mq.Dataset[0]
 		mq.Dataset = mq.Dataset[1:]
-		return mq.Dataset[0]
+		return metricTupeToReturn
 	}
 	return MetricTupel{}
 
