@@ -3,7 +3,7 @@ package storage
 import (
 	"time"
 
-	"git.workshop21.ch/ewa/common/go/abraxas/logging"
+	"git.workshop21.ch/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	as "github.com/aerospike/aerospike-client-go"
 )

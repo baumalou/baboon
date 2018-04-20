@@ -7,7 +7,7 @@ import (
 
 	"git.workshop21.ch/workshop21/ba/operator/fio-go"
 
-	"git.workshop21.ch/ewa/common/go/abraxas/logging"
+	"git.workshop21.ch/go/abraxas/logging"
 	"github.com/gorilla/mux"
 
 	"git.workshop21.ch/workshop21/ba/operator/configuration"

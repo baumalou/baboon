@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"git.workshop21.ch/ewa/common/go/abraxas/logging"
+	"git.workshop21.ch/go/abraxas/logging"
 	verifier "git.workshop21.ch/workshop21/ba/operator/cluster-verifier"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"

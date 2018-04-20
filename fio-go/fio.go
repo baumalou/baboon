@@ -3,7 +3,7 @@ package fio
 import (
 	"strings"
 
-	"git.workshop21.ch/ewa/common/go/vrsg/logging"
+	"git.workshop21.ch/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/bashexecuter"
 )
 
