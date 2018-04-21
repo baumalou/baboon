@@ -3,6 +3,7 @@ package web
 import (
 	"flag"
 	"net/http"
+	"strings"
 	"sync"
 
 	"git.workshop21.ch/workshop21/ba/operator/fio-go"
@@ -42,6 +43,7 @@ func Serve(config *configuration.Config) {
 	router := mux.NewRouter()
 	router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir(directory))))
 	router.HandleFunc("/run/{mode}/{size}", RunSmall).Methods("GET")
+	router.HandleFunc("/getqueue/{endpoint}", PrintQueue).Methods("GET")
 	router.HandleFunc("/run/{mode}/{size}/{bsize}", RunSmall).Methods("GET")
 	logging.WithID("BA-OPERATOR-FILESERV-001").Printf("Serving %s on HTTP port: %s\n", directory, port)
 	logging.WithID("BA-OPERATOR-FILESERV-FATAL").Errorln(http.ListenAndServe(":"+port, router))
@@ -74,6 +76,20 @@ func runFio(size, mode string) {
 	lockMutex()
 	defer unlockMutex()
 	fio.RunFioAndGenPlot(size, mode)
+}
+
+func PrintQueue(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	if len(params["endpoint"]) < 4 {
+		w.Write([]byte("wrong endpoint.\nallowed endpoints: " + strings.Join(monitoring.GetEndpoints(), ",")))
+		return
+	}
+	dataset, err := monitoring.GetDataset(params["endpoint"])
+	if err != nil {
+		w.Write([]byte("wrong endpoint.\nallowed endpoints: " + strings.Join(monitoring.GetEndpoints(), ",") + " " + err.Error()))
+		return
+	}
+	w.Write([]byte(dataset.Queue.PrintQueue()))
 }
 
 func handleEndpoint(mode, size, bsize string, w http.ResponseWriter) {

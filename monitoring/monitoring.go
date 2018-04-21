@@ -1,6 +1,7 @@
 package monitoring
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -12,6 +13,25 @@ import (
 )
 
 var datasets map[string]queue.Dataset
+
+// GetDataset returns a COPY of a dataset
+func GetDataset(endpoint string) (queue.Dataset, error) {
+	value, ok := datasets[endpoint]
+	if ok {
+		return value, nil
+	}
+	return queue.Dataset{Queue: nil}, errors.New("Key not existent!")
+
+}
+
+// GetEndpoints returns a slice of keys as string
+func GetEndpoints() []string {
+	keys := make([]string, 0, len(datasets))
+	for k := range datasets {
+		keys = append(keys, k)
+	}
+	return keys
+}
 
 func MonitorCluster(config *configuration.Config) {
 	datasets = map[string]queue.Dataset{}
@@ -53,6 +73,7 @@ func VerifyClusterStatus() bool {
 func monitorRoutine(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int) {
 	data := getMonitoringData(config, endpoint, timeTo, config.SampleInterval)
 	mq.AddMonitoringTupelSliceToDataset(data)
+	mq.Sort()
 }
 
 func fillDataset(datasets *map[string]queue.Dataset, config *configuration.Config) {
