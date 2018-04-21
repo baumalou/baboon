@@ -24,7 +24,7 @@ func main() {
 	go web.Serve(config)
 
 	// runClassifier()
-	time.Sleep(60 * time.Second)
+	time.Sleep(6 * time.Second)
 	//var keys []int
 	log.Println()
 	monitoring.MonitorCluster(config)

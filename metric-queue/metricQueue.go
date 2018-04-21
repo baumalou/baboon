@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"fmt"
 	"sort"
 )
 
@@ -82,4 +83,13 @@ func (mq *MetricQueue) Push(tupel MetricTupel) {
 
 func (mq *MetricQueue) Pop() MetricTupel {
 	return mq.removeOldestItem()
+}
+
+func (mq *MetricQueue) PrintQueue() string {
+	returnString := ""
+	for _, tupel := range mq.Dataset {
+		returnString = returnString + fmt.Sprintln(tupel.Timestamp, ": ", tupel.Value)
+	}
+	fmt.Println(returnString)
+	return returnString
 }
