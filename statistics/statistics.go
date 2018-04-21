@@ -36,7 +36,7 @@ func Deviation(dataArray []queue.MetricTupel, number int) float64 {
 func mappingToArray(dataArray []queue.MetricTupel, number int) stats.Float64Data {
 	data := make(stats.Float64Data, 0, number)
 	for i := 0; i < number; i++ {
-		data[(number-1)-i] = dataArray[len(dataArray)-i].Value
+		data[(number-1)-i] = dataArray[len(dataArray)-1-i].Value
 	}
 	return data
 }
