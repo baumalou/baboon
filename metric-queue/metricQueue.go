@@ -32,10 +32,23 @@ func (mq *MetricQueue) AddMonitoringTupelSliceToDataset(tupelArray []MetricTupel
 		mq.Pop()
 	}
 }
+
 func (mq *MetricQueue) InsertMonitoringTupelInQueue(tupelArray []MetricTupel) {
 	for _, tupel := range tupelArray {
 		mq.Push(tupel)
 	}
+}
+
+func (mq *MetricQueue) GetNNewestTupel(n int) []MetricTupel {
+	length := len(mq.Dataset)
+	data := make([]MetricTupel, n)
+	if length > 0 {
+		mq.Dataset = mq.Dataset[1:]
+		for i := 0; i < n; i++ {
+			data[n-i] = mq.Dataset[length-i]
+		}
+	}
+	return data
 }
 
 func (mq *MetricQueue) Push(tupel MetricTupel) {

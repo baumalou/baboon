@@ -20,10 +20,10 @@ Percentiles = [0.01,0.10,0.25,0.50,0.75,0.80,0.90,0.95,0.99]
 [Endpoints]
 [Endpoints.Endpoint1]
 Name="IOPS_write"
-Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_w%5B5m%5D))"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_w%5B1m%5D))"
 [Endpoints.Endpoint2]
 Name="IOPS_read"
-Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_r%5B5m%5D))"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_r%5B1m%5D))"
 [Endpoints.Endpoint3]
 Name="Mon_quorum"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_mon_quorum_count"
@@ -41,10 +41,10 @@ Name="AvOSDcommlat"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_commit_latency_ms)"
 [Endpoints.Endpoint8]
 Name="TPwrite"
-Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_w%5B5m%5D))"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_w%5B1m%5D))"
 [Endpoints.Endpoint9]
 Name="TPread"
-Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_r%5B5m%5D))"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_r%5B1m%5D))"
 
 [Endpoints.Endpoint10]
 Name="CEPH_health"
@@ -60,14 +60,14 @@ Name="UsePercOfMem"
 Path="/api/datasources/proxy/2/api/v1/query_range?query=((sum(node_memory_MemTotal)%20-%20sum(node_memory_MemFree)%20-%20sum(node_memory_Buffers)%20-%20sum(node_memory_Cached))%20%2F%20sum(node_memory_MemTotal))%20*%20100"
 [Endpoints.Endpoint14]
 Name="networkReceive"
-Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(rate(node_network_receive_bytes%7Bdevice!~%22lo%22%7D%5B5m%5D))"
+Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(rate(node_network_receive_bytes%7Bdevice!~%22lo%22%7D%5B1m%5D))"
 
 [Endpoints.Endpoint15]
 Name="networkSend"
-Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(rate(node_network_transmit_bytes%7Bdevice!~%22lo%22%7D%5B5m%5D))"
+Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(rate(node_network_transmit_bytes%7Bdevice!~%22lo%22%7D%5B1m%5D))"
 [Endpoints.Endpoint16]
 Name="PercUsedCPU"
-Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(100%20-%20(avg%20by%20(instance)%20(rate(node_cpu%7Bjob%3D%22node-exporter%22%2Cmode%3D%22idle%22%7D%5B5m%5D))%20*%20100))%20%2F%20count(node_cpu%7Bjob%3D%22node-exporter%22%2Cmode%3D%22idle%22%7D)"
+Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(100%20-%20(avg%20by%20(instance)%20(rate(node_cpu%7Bjob%3D%22node-exporter%22%2Cmode%3D%22idle%22%7D%5B1m%5D))%20*%20100))%20%2F%20count(node_cpu%7Bjob%3D%22node-exporter%22%2Cmode%3D%22idle%22%7D)"
 [Endpoints.Endpoint17]
 Name="OSD_UP"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"
