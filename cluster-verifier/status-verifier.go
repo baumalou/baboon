@@ -1,89 +1,109 @@
 package verifier
 
 import (
+	"strconv"
+
+	"git.workshop21.ch/go/abraxas/logging"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
 	stats "git.workshop21.ch/workshop21/ba/operator/statistics"
+	"git.workshop21.ch/workshop21/ba/operator/util"
 )
 
-type Status int
-
 const (
-	HEALTHY Status = 1 + iota
+	HEALTHY int = 1 + iota
 	DEGRADED
 	ERROR
 )
 
 // VerifyClusterStatus func cluster
-func VerifyClusterStatus(dataset map[string]queue.Dataset) (Status, error) {
+func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, error) {
 	length := 4
+	logging.WithID("BA-OPERATOR-VERIFIER-01").Info("verifier started")
 
-	iops := verifyIOPS(dataset["IOPS_write"].Queue, dataset["IOPS_read"].Queue, length)
-	mon := verifyMonitorCounts(dataset["Mon_quorum"].Queue.Dataset, length)
-	commit := verifyOSDCommitLatency(dataset["AvOSDcommlat"].Queue.Dataset, length)
-	apply := verifyOSDApplyLatency(dataset["AvOSDappllat"].Queue.Dataset, length)
-	health := verifyCephHealth(dataset["CEPH_health"].Queue.Dataset, length)
-	orphan := verifyOSDOrphan(dataset["OSDInQuorum"].Queue, dataset["OSD_UP"].Queue, length)
+	iops, iopsStatus, err := verifyIOPS(dataset["IOPS_write"].Queue, dataset["IOPS_read"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-08").Info("IOPS: " + util.FloatToStr(iops) + " " + statusToStr(iopsStatus))
+	mon, monStatus, err := verifyMonitorCounts(dataset["Mon_quorum"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-09").Info("MonCount: " + util.FloatToStr(mon) + " " + statusToStr(monStatus))
+	commit, commitStatus, err := verifyOSDCommitLatency(dataset["AvOSDcommlat"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-10").Info("CommitLat: " + util.FloatToStr(commit) + " " + statusToStr(commitStatus))
+	apply, applyStatus, err := verifyOSDApplyLatency(dataset["AvOSDappllat"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-12").Info("ApplyLat: " + util.FloatToStr(apply) + " " + statusToStr(applyStatus))
+	health, healthStatus, err := verifyCephHealth(dataset["CEPH_health"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-12").Info("CEPHHealth: " + util.FloatToStr(health) + " " + statusToStr(healthStatus))
+	orphan, orphanStatus, err := verifyOSDOrphan(dataset["OSDInQuorum"].Queue, dataset["OSD_UP"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-13").Info("Orphan: " + util.FloatToStr(orphan) + " " + statusToStr(orphanStatus))
 
-	infra := VerfiyInfrastructureStatus(dataset, length)
+	infraStatus, err := VerfiyInfrastructureStatus(dataset, length)
 
-	if iops == ERROR || mon == ERROR || commit == ERROR || apply == ERROR || health == ERROR || orphan == ERROR || infra == ERROR {
-		return ERROR, nil
-	} else if iops == DEGRADED || mon == DEGRADED || commit == DEGRADED || apply == DEGRADED || health == DEGRADED || orphan == DEGRADED || infra == DEGRADED {
-		return DEGRADED, nil
-	} else {
-		return HEALTHY, nil
+	logging.WithID("BA-OPERATOR-VERIFIER-02").Info("verifier finished")
+
+	status := HEALTHY
+	if iopsStatus == ERROR || monStatus == ERROR || commitStatus == ERROR || applyStatus == ERROR || healthStatus == ERROR || orphanStatus == ERROR || infraStatus == ERROR {
+		status = ERROR
+	} else if iopsStatus == DEGRADED || monStatus == DEGRADED || commitStatus == DEGRADED || applyStatus == DEGRADED || healthStatus == DEGRADED || orphanStatus == DEGRADED || infraStatus == DEGRADED {
+		status = DEGRADED
 	}
+
+	logging.WithID("BA-OPERATOR-VERIFIER-14").Info("Result: " + statusToStr(status))
+	return status, err
 
 }
 
 // VerfiyInfrastructureStatus func infrastructure
-func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) Status {
+func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (int, error) {
 	yellow := 0
 	red := 0
 
-	cpu := verifyCPUUsage(dataset["PercUsedCPU"].Queue.Dataset, length)
-	if cpu == DEGRADED {
+	cpu, cpuStatus, err := verifyCPUUsage(dataset["PercUsedCPU"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-03").Info("CPUUsage: " + util.FloatToStr(cpu) + " " + statusToStr(cpuStatus))
+	if cpuStatus == DEGRADED {
 		yellow += 3
-	} else if cpu == ERROR {
-		red += 3
-	}
-	cores := verifyCPUCoresUsage(dataset["CPUCoresUsed"].Queue.Dataset, length)
-	if cores == DEGRADED {
-		yellow += 3
-	} else if cores == ERROR {
-		red += 3
-	}
-	mem := verifyMemUsage(dataset["UsePercOfMem"].Queue.Dataset, length)
-	if mem == DEGRADED {
-		yellow += 3
-	} else if mem == ERROR {
+	} else if cpuStatus == ERROR {
 		red += 3
 	}
 
-	net := verifyNetworkUsage(dataset["networkReceive"].Queue, dataset["networkSend"].Queue, length)
-	if net == DEGRADED {
+	cores, coresStatus, err := verifyCPUCoresUsage(dataset["CPUCoresUsed"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-04").Info("CoresUsage: " + util.FloatToStr(cores) + " " + statusToStr(coresStatus))
+	if coresStatus == DEGRADED {
+		yellow += 3
+	} else if coresStatus == ERROR {
+		red += 3
+	}
+
+	mem, memStatus, err := verifyMemUsage(dataset["UsePercOfMem"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-05").Info("MemUsage: " + util.FloatToStr(mem) + " " + statusToStr(memStatus))
+	if memStatus == DEGRADED {
+		yellow += 3
+	} else if memStatus == ERROR {
+		red += 3
+	}
+
+	net, netStatus, err := verifyNetworkUsage(dataset["networkReceive"].Queue, dataset["networkSend"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-06").Info("NetUsage: " + util.FloatToStr(net) + " " + statusToStr(netStatus))
+	if netStatus == DEGRADED {
 		yellow += 2
-	} else if net == ERROR {
+	} else if netStatus == ERROR {
 		red += 2
 	}
 
-	cap := verifyCapUsage(dataset["Av_capacity"].Queue.Dataset, length)
-	if cap == DEGRADED {
+	cap, capStatus, err := verifyCapUsage(dataset["Av_capacity"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-07").Info("CapUsage: " + util.FloatToStr(cap) + " " + statusToStr(capStatus))
+	if capStatus == DEGRADED {
 		yellow++
-	} else if cap == ERROR {
+	} else if capStatus == ERROR {
 		red++
 	}
 
 	if red >= 1 {
-		return ERROR
+		return ERROR, err
 	} else if yellow >= 2 {
-		return DEGRADED
+		return DEGRADED, err
 	} else {
-		return HEALTHY
+		return HEALTHY, err
 	}
 }
 
-func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) Status {
+func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (float64, int, error) {
 	writeDS := write.GetNNewestTupel(length)
 	readDS := read.GetNNewestTupel(length)
 	data := make([]queue.MetricTupel, length)
@@ -97,113 +117,121 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) S
 	deviation := stats.Deviation(data, length)
 
 	if (max-deviation) > result || (min+deviation) < result {
-		return HEALTHY
+		return result, HEALTHY, nil
 	} else {
 		if result < 6000 {
-			return HEALTHY
+			return result, HEALTHY, nil
 		} else if result > 6000 && result < 14000 {
-			return DEGRADED
+			return result, DEGRADED, nil
 		} else {
-			return ERROR
+			return result, ERROR, nil
 		}
 	}
 }
 
-func verifyMonitorCounts(data []queue.MetricTupel, length int) Status {
+func verifyMonitorCounts(queue *queue.MetricQueue, length int) (float64, int, error) {
+	data := queue.GetNNewestTupel(length)
 	min := stats.Min(data, length)
+
 	if min < 2 {
-		return ERROR
+		return min, ERROR, nil
 	} else if min < 3 {
-		return DEGRADED
+		return min, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return min, HEALTHY, nil
 	}
 }
 
-func verifyOSDCommitLatency(commit []queue.MetricTupel, length int) Status {
+func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (float64, int, error) {
 
+	commit := queue.GetNNewestTupel(length)
 	max := stats.Max(commit, length)
 
 	if max > 50 {
-		return ERROR
+		return max, ERROR, nil
 	} else if max >= 10 && max <= 50 {
-		return DEGRADED
+		return max, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return max, HEALTHY, nil
 	}
 }
-func verifyOSDApplyLatency(apply []queue.MetricTupel, length int) Status {
+func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (float64, int, error) {
+	apply := queue.GetNNewestTupel(length)
 	max := stats.Max(apply, length)
 
 	if max > 50 {
-		return ERROR
+		return max, ERROR, nil
 	} else if max >= 10 && max <= 50 {
-		return DEGRADED
+		return max, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return max, HEALTHY, nil
 	}
 }
 
-func verifyCephHealth(health []queue.MetricTupel, length int) Status {
+func verifyCephHealth(queue *queue.MetricQueue, length int) (float64, int, error) {
+	health := queue.GetNNewestTupel(length)
 	max := stats.Max(health, length)
 
 	if max == 2 {
-		return ERROR
+		return max, ERROR, nil
 	} else if max == 1 {
-		return DEGRADED
+		return max, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return max, HEALTHY, nil
 	}
 }
 
-func verifyCPUUsage(usage []queue.MetricTupel, length int) Status {
+func verifyCPUUsage(queue *queue.MetricQueue, length int) (float64, int, error) {
 
+	usage := queue.GetNNewestTupel(length)
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
 	//deviation := stats.Deviation(usage, length)
 
 	if result > 85 {
-		return ERROR
+		return result, ERROR, nil
 	} else if result >= 10 && result <= 85 {
-		return DEGRADED
+		return result, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return result, HEALTHY, nil
 	}
 }
 
-func verifyCPUCoresUsage(usage []queue.MetricTupel, length int) Status {
+func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (float64, int, error) {
 
+	usage := queue.GetNNewestTupel(length)
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
 	//deviation := stats.Deviation(usage, length)
 
 	if result > 85 {
-		return ERROR
+		return result, ERROR, nil
 	} else if result >= 10 && result <= 85 {
-		return DEGRADED
+		return result, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return result, HEALTHY, nil
 	}
 }
 
-func verifyMemUsage(usage []queue.MetricTupel, length int) Status {
+func verifyMemUsage(queue *queue.MetricQueue, length int) (float64, int, error) {
 
+	usage := queue.GetNNewestTupel(length)
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
 	//deviation := stats.Deviation(usage, length)
 
 	if result > 80 {
-		return ERROR
+		return result, ERROR, nil
 	} else if result >= 10 && result <= 80 {
-		return DEGRADED
+		return result, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return result, HEALTHY, nil
 	}
 }
-func verifyNetworkUsage(rec *queue.MetricQueue, send *queue.MetricQueue, length int) Status {
+func verifyNetworkUsage(rec *queue.MetricQueue, send *queue.MetricQueue, length int) (float64, int, error) {
 	recDS := rec.GetNNewestTupel(length)
 	sendDS := send.GetNNewestTupel(length)
 	data := make([]queue.MetricTupel, length)
@@ -217,15 +245,15 @@ func verifyNetworkUsage(rec *queue.MetricQueue, send *queue.MetricQueue, length 
 	//deviation := stats.Deviation(data, length)
 
 	if result > 80 {
-		return ERROR
+		return result, ERROR, nil
 	} else if result >= 10 && result <= 80 {
-		return DEGRADED
+		return result, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return result, HEALTHY, nil
 	}
 }
 
-func verifyOSDOrphan(in *queue.MetricQueue, up *queue.MetricQueue, length int) Status {
+func verifyOSDOrphan(in *queue.MetricQueue, up *queue.MetricQueue, length int) (float64, int, error) {
 	inDS := in.GetNNewestTupel(length)
 	upDS := up.GetNNewestTupel(length)
 	data := make([]queue.MetricTupel, length)
@@ -239,25 +267,30 @@ func verifyOSDOrphan(in *queue.MetricQueue, up *queue.MetricQueue, length int) S
 	//deviation := stats.Deviation(data, length)
 
 	if max > 1 {
-		return ERROR
+		return max, ERROR, nil
 	} else if max == 1 {
-		return DEGRADED
+		return max, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return max, HEALTHY, nil
 	}
 }
-func verifyCapUsage(usage []queue.MetricTupel, length int) Status {
+func verifyCapUsage(queue *queue.MetricQueue, length int) (float64, int, error) {
 
+	usage := queue.GetNNewestTupel(length)
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
 	//deviation := stats.Deviation(usage, length)
 
 	if result > 80 {
-		return ERROR
+		return result, ERROR, nil
 	} else if result >= 10 && result <= 80 {
-		return DEGRADED
+		return result, DEGRADED, nil
 	} else {
-		return HEALTHY
+		return result, HEALTHY, nil
 	}
+}
+
+func statusToStr(stat int) string {
+	return strconv.Itoa(stat)
 }
