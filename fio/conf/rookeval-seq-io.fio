@@ -10,6 +10,7 @@ size=500M
 directory=${DIR}
 filename=fio-test.file
 time_based
+group_reporting
 
 [seq-read]
 bs=${SIZE}

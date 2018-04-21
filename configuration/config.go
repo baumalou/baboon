@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"git.workshop21.ch/ewa/common/go/abraxas/logging"
-	cmn_as_conf "git.workshop21.ch/ewa/common/go/abraxas/storage/aerospike"
+	"git.workshop21.ch/go/abraxas/logging"
+	cmn_as_conf "git.workshop21.ch/go/abraxas/storage/aerospike"
 
 	"github.com/BurntSushi/toml"
 )

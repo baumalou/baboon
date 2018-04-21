@@ -3,7 +3,7 @@ package bashexecuter
 import (
 	"os/exec"
 
-	"git.workshop21.ch/ewa/common/go/abraxas/logging"
+	"git.workshop21.ch/go/abraxas/logging"
 )
 
 // Execute a given command in bash, returns error

@@ -4,14 +4,17 @@ import (
 	"strconv"
 	"time"
 
-	"git.workshop21.ch/ewa/common/go/abraxas/logging"
+	"git.workshop21.ch/go/abraxas/logging"
+	verifier "git.workshop21.ch/workshop21/ba/operator/cluster-verifier"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
 	"github.com/bmizerany/perks/quantile"
 )
 
+var datasets map[string]queue.Dataset
+
 func MonitorCluster(config *configuration.Config) {
-	datasets := map[string]queue.Dataset{}
+	datasets = map[string]queue.Dataset{}
 	fillDataset(&datasets, config)
 	for _, endpoint := range config.Endpoints {
 		logging.WithID("BA-OPERATOR-MONITOR-" + endpoint.Name).Println("generating quantiles")
@@ -22,8 +25,29 @@ func MonitorCluster(config *configuration.Config) {
 		for _, endpoint := range config.Endpoints {
 			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
 		}
+
 		time.Sleep(10 * time.Second)
 	}
+}
+
+func VerifyClusterStatus() bool {
+	status, err := verifier.VerifyClusterStatus(datasets)
+	if err != nil {
+		logging.WithError("BA-OPERATOR-MONITOR-003", err).Fatalln("not able to determine Cluster state", err)
+	}
+	switch status {
+	case verifier.HEALTHY:
+		logging.WithID("BA-OPERATOR-MONITOR-004").Println("Cluster is Healthy: ", status)
+		return true
+	case verifier.DEGRADED:
+		logging.WithID("BA-OPERATOR-MONITOR-004").Println("Cluster is Degraded: ", status)
+		return false
+	case verifier.ERROR:
+		logging.WithID("BA-OPERATOR-MONITOR-004").Println("Cluster is in Error State!!! : ", status)
+		return false
+	}
+	return false
+
 }
 
 func monitorRoutine(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int) {

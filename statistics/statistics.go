@@ -39,4 +39,4 @@ func mappingToArray(dataArray []queue.MetricTupel, number int) stats.Float64Data
 		data[(number-1)-i] = dataArray[len(dataArray)-i].Value
 	}
 	return data
-}
+}1
