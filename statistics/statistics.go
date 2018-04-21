@@ -16,7 +16,7 @@ func Min(dataArray []queue.MetricTupel, number int) float64 {
 //Max function
 func Max(dataArray []queue.MetricTupel, number int) float64 {
 	data := util.MappingToArray(dataArray, number)
-	max, _ := stats.Min(data)
+	max, _ := stats.Max(data)
 	return max
 }
 
