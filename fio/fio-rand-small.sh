@@ -1,1 +1,1 @@
-SIZE=4k DIR=/testvol DATE=$(date +%F_%T) fio /app/fio/conf/rookeval-rand-io.fio
+SIZE=${SIZE:-4k} DIR=/testvol DATE=$(date +%F_%T) fio /app/fio/conf/rookeval-rand-io.fio
