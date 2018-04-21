@@ -8,7 +8,12 @@ import (
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 	"git.workshop21.ch/workshop21/ba/operator/web"
+	"github.com/sirupsen/logrus"
 )
+
+func init() {
+	logrus.SetLevel(logrus.DebugLevel)
+}
 
 func main() {
 	logging.WithID("PERF-OP-000").Info("operator started")
