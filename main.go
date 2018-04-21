@@ -4,9 +4,8 @@ import (
 	"log"
 	"time"
 
-	"git.workshop21.ch/ewa/common/go/abraxas/logging"
+	"git.workshop21.ch/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
-	fio "git.workshop21.ch/workshop21/ba/operator/fio-go"
 	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 	"git.workshop21.ch/workshop21/ba/operator/web"
 )
@@ -19,12 +18,12 @@ func main() {
 	}
 	go web.Serve(config)
 
-	runClassifier()
+	// runClassifier()
 	time.Sleep(60 * time.Second)
 	//var keys []int
 	log.Println()
 	monitoring.MonitorCluster(config)
-	/
+	/*
 		for _, v := range datasets {
 			keys = make([]int, 0, len(v))
 			for ts := range v {
@@ -53,10 +52,10 @@ func main() {
 			return
 		}
 	*/
-	
+
 }
 
-func runClassifier() {
-	fio.RunSmall()
-	fio.FioGenPlot()
-}
+// func runClassifier() {
+// 	fio.RunSmall()
+// 	fio.FioGenPlot()
+// }

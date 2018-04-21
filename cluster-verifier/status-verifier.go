@@ -14,7 +14,7 @@ const (
 )
 
 // VerifyClusterStatus func cluster
-func VerifyClusterStatus(dataset map[string]queue.Dataset) Status {
+func VerifyClusterStatus(dataset map[string]queue.Dataset) (Status, error) {
 	length := 4
 
 	iops := verifyIOPS(dataset["IOPS_write"].Queue, dataset["IOPS_read"].Queue, length)
@@ -27,11 +27,11 @@ func VerifyClusterStatus(dataset map[string]queue.Dataset) Status {
 	infra := VerfiyInfrastructureStatus(dataset, length)
 
 	if iops == ERROR || mon == ERROR || commit == ERROR || apply == ERROR || health == ERROR || orphan == ERROR || infra == ERROR {
-		return ERROR
+		return ERROR, nil
 	} else if iops == DEGRADED || mon == DEGRADED || commit == DEGRADED || apply == DEGRADED || health == DEGRADED || orphan == DEGRADED || infra == DEGRADED {
-		return DEGRADED
+		return DEGRADED, nil
 	} else {
-		return HEALTHY
+		return HEALTHY, nil
 	}
 
 }
