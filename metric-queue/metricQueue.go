@@ -77,6 +77,12 @@ func (mq *MetricQueue) GetNNewestTupel(n int) []MetricTupel {
 	return data
 }
 
+func (mq *MetricQueue) Sort() {
+	if !sort.IsSorted(mq) {
+		sort.Sort(mq)
+	}
+}
+
 func (mq *MetricQueue) Push(tupel MetricTupel) {
 	mq.Dataset = append(mq.Dataset, tupel)
 }

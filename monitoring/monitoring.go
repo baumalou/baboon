@@ -73,6 +73,7 @@ func VerifyClusterStatus() bool {
 func monitorRoutine(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int) {
 	data := getMonitoringData(config, endpoint, timeTo, config.SampleInterval)
 	mq.AddMonitoringTupelSliceToDataset(data)
+	mq.Sort()
 }
 
 func fillDataset(datasets *map[string]queue.Dataset, config *configuration.Config) {
