@@ -1,5 +1,9 @@
 package queue
 
+import (
+	"sort"
+)
+
 type Dataset struct {
 	Name  string
 	Queue *MetricQueue
@@ -15,6 +19,24 @@ type MetricQueue struct {
 
 func NewMetricQueue() *MetricQueue {
 	return &MetricQueue{Dataset: nil}
+}
+
+func (mq *MetricQueue) sort() {
+	sort.Sort(mq)
+}
+
+func (mq *MetricQueue) Swap(i, j int) {
+	temp := mq.Dataset[i]
+	mq.Dataset[i] = mq.Dataset[j]
+	mq.Dataset[j] = temp
+}
+
+func (mq *MetricQueue) Less(i, j int) bool {
+	return mq.Dataset[i].Timestamp < mq.Dataset[j].Timestamp
+}
+
+func (mq *MetricQueue) Len() int {
+	return len(mq.Dataset)
 }
 
 func (mq *MetricQueue) removeOldestItem() MetricTupel {
