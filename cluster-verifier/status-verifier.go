@@ -191,7 +191,7 @@ func verifyCPUUsage(queue *queue.MetricQueue, length int) (float64, int, error) 
 
 	if result > 85 {
 		return result, ERROR, nil
-	} else if result >= 10 && result <= 85 {
+	} else if result >= 50 && result <= 85 {
 		return result, DEGRADED, nil
 	} else {
 		return result, HEALTHY, nil
@@ -206,9 +206,9 @@ func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (float64, int, er
 	//min := stats.Min(usage, length)
 	//deviation := stats.Deviation(usage, length)
 
-	if result > 85 {
+	if result > 50 {
 		return result, ERROR, nil
-	} else if result >= 10 && result <= 85 {
+	} else if result >= 30 && result <= 50 {
 		return result, DEGRADED, nil
 	} else {
 		return result, HEALTHY, nil
@@ -225,7 +225,7 @@ func verifyMemUsage(queue *queue.MetricQueue, length int) (float64, int, error) 
 
 	if result > 80 {
 		return result, ERROR, nil
-	} else if result >= 10 && result <= 80 {
+	} else if result >= 50 && result <= 80 {
 		return result, DEGRADED, nil
 	} else {
 		return result, HEALTHY, nil
@@ -246,7 +246,7 @@ func verifyNetworkUsage(rec *queue.MetricQueue, send *queue.MetricQueue, length 
 
 	if result > 80 {
 		return result, ERROR, nil
-	} else if result >= 10 && result <= 80 {
+	} else if result >= 50 && result <= 80 {
 		return result, DEGRADED, nil
 	} else {
 		return result, HEALTHY, nil
