@@ -72,10 +72,10 @@ func RunSmall(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func runFio(size, mode string) {
+func runFio(size, mode, bsize string) {
 	lockMutex()
 	defer unlockMutex()
-	fio.RunFioAndGenPlot(size, mode)
+	fio.RunFioAndGenPlot(size, mode, bsize)
 }
 
 func PrintQueue(w http.ResponseWriter, r *http.Request) {
@@ -95,11 +95,11 @@ func PrintQueue(w http.ResponseWriter, r *http.Request) {
 func handleEndpoint(mode, size, bsize string, w http.ResponseWriter) {
 	if mode == "seq" {
 		w.Write([]byte(mode + " " + size + " started"))
-		go runFio(size, mode)
+		go runFio(size, mode, bsize)
 		return
 	} else if mode == "rand" {
 		w.Write([]byte(mode + " " + size + " started"))
-		go runFio(size, mode)
+		go runFio(size, mode, bsize)
 		return
 	}
 	w.Write([]byte("wrong mode.\nallowed modes: seq, rand"))
