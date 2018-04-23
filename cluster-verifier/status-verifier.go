@@ -17,7 +17,7 @@ const (
 
 // VerifyClusterStatus func cluster
 func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, error) {
-	length := 4
+	length := 20
 	logging.WithID("BA-OPERATOR-VERIFIER-01").Info("verifier started")
 
 	iops, iopsStatus, iopsDev, iopsWarning, err := verifyIOPS(dataset["IOPS_write"].Queue, dataset["IOPS_read"].Queue, length)
