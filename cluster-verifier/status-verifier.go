@@ -118,15 +118,16 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (
 	}
 	result := stats.Mean(data, length)
 	deviation := stats.Deviation(data, length)
+	deviation += result
 
 	status := HEALTHY
 	devStatus := HEALTHY
 	limitYellow := 6000.00
 	limitRed := 14000.00
 
-	if (result + deviation) > limitRed {
+	if deviation > limitRed {
 		status = ERROR
-	} else if result >= limitYellow && result <= limitRed {
+	} else if deviation >= limitYellow && deviation <= limitRed {
 		status = DEGRADED
 	}
 
@@ -156,15 +157,16 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (float64, int,
 	commit := queue.GetNNewestTupel(length)
 	result := stats.Mean(commit, length)
 	deviation := stats.Deviation(commit, length)
+	deviation += result
 
 	status := HEALTHY
 	devStatus := HEALTHY
 	limitYellow := 10.00
 	limitRed := 50.00
 
-	if (result + deviation) > limitRed {
+	if deviation > limitRed {
 		status = ERROR
-	} else if (result+deviation) >= limitYellow && (result+deviation) <= limitRed {
+	} else if deviation >= limitYellow && deviation <= limitRed {
 		status = DEGRADED
 	}
 
@@ -180,15 +182,16 @@ func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (float64, int, 
 	apply := queue.GetNNewestTupel(length)
 	result := stats.Mean(apply, length)
 	deviation := stats.Deviation(apply, length)
+	deviation += result
 
 	status := HEALTHY
 	devStatus := HEALTHY
 	limitYellow := 10.00
 	limitRed := 50.00
 
-	if (result + deviation) > limitRed {
+	if deviation > limitRed {
 		status = ERROR
-	} else if (result+deviation) >= limitYellow && (result+deviation) <= limitRed {
+	} else if deviation >= limitYellow && deviation <= limitRed {
 		status = DEGRADED
 	}
 
