@@ -12,7 +12,7 @@ import (
 func RunFioAndGenPlot(size, mode, bsize string) error {
 	var res string
 	var err error
-	if bsize != "notSet" {
+	if bsize == "notSet" {
 		res, err = bashexecuter.Execute("/app/fio/fio-" + mode + "-" + size + ".sh")
 	} else {
 		res, err = bashexecuter.Execute("/app/fio/fio-" + mode + "-" + size + ".sh " + bsize)
