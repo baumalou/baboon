@@ -99,6 +99,9 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 		red++
 	}
 
+	daysRemainingCap := predictDaysToCapacitiyLimit(dataset["Av_capacity"].Queue.Dataset)
+	logging.WithID("BA-OPERATOR-VERIFIER-15").Info("Predicted Day until Memory: " + statusToStr(capStatus))
+
 	if red >= 1 {
 		return ERROR, err
 	} else if yellow >= 2 {
@@ -106,6 +109,13 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 	} else {
 		return HEALTHY, err
 	}
+}
+
+func predictDaysToCapacitiyLimit(data []queue.MetricTupel) int{
+	timestamp := stats.ForecastRegression(dataArray []queue.MetricTupel)
+	pred := time.unix(timestamp, 0)
+	diff := pred.sub(time.now())
+	return int(diff.Hours()/24)
 }
 
 func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (float64, int, float64, int, error) {
