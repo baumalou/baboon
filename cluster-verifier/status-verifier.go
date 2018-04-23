@@ -17,19 +17,24 @@ const (
 
 // VerifyClusterStatus func cluster
 func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, error) {
-	length := 4
+	length := 20
 	logging.WithID("BA-OPERATOR-VERIFIER-01").Info("verifier started")
 
-	iops, iopsStatus, err := verifyIOPS(dataset["IOPS_write"].Queue, dataset["IOPS_read"].Queue, length)
-	logging.WithID("BA-OPERATOR-VERIFIER-08").Info("IOPS: " + util.FloatToStr(iops) + " " + statusToStr(iopsStatus))
+	iops, iopsStatus, iopsDev, iopsWarning, err := verifyIOPS(dataset["IOPS_write"].Queue, dataset["IOPS_read"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-08").Info("IOPS: " + util.FloatToStr(iops) + " " + statusToStr(iopsStatus) + " " + util.FloatToStr(iopsDev) + " " + statusToStr(iopsWarning))
+
 	mon, monStatus, err := verifyMonitorCounts(dataset["Mon_quorum"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-09").Info("MonCount: " + util.FloatToStr(mon) + " " + statusToStr(monStatus))
-	commit, commitStatus, err := verifyOSDCommitLatency(dataset["AvOSDcommlat"].Queue, length)
-	logging.WithID("BA-OPERATOR-VERIFIER-10").Info("CommitLat: " + util.FloatToStr(commit) + " " + statusToStr(commitStatus))
-	apply, applyStatus, err := verifyOSDApplyLatency(dataset["AvOSDappllat"].Queue, length)
-	logging.WithID("BA-OPERATOR-VERIFIER-12").Info("ApplyLat: " + util.FloatToStr(apply) + " " + statusToStr(applyStatus))
+
+	commit, commitStatus, commitDev, commitWarning, err := verifyOSDCommitLatency(dataset["AvOSDcommlat"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-10").Info("CommitLat: " + util.FloatToStr(commit) + " " + statusToStr(commitStatus) + " " + util.FloatToStr(commitDev) + " " + statusToStr(commitWarning))
+
+	apply, applyStatus, applyDev, applyWarning, err := verifyOSDApplyLatency(dataset["AvOSDappllat"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-12").Info("ApplyLat: " + util.FloatToStr(apply) + " " + statusToStr(applyStatus) + " " + util.FloatToStr(applyDev) + " " + statusToStr(applyWarning))
+
 	health, healthStatus, err := verifyCephHealth(dataset["CEPH_health"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-12").Info("CEPHHealth: " + util.FloatToStr(health) + " " + statusToStr(healthStatus))
+
 	orphan, orphanStatus, err := verifyOSDOrphan(dataset["OSDInQuorum"].Queue, dataset["OSD_UP"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-13").Info("Orphan: " + util.FloatToStr(orphan) + " " + statusToStr(orphanStatus))
 
@@ -103,7 +108,7 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 	}
 }
 
-func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (float64, int, error) {
+func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (float64, int, float64, int, error) {
 	writeDS := write.GetNNewestTupel(length)
 	readDS := read.GetNNewestTupel(length)
 	data := make([]queue.MetricTupel, length)
@@ -112,21 +117,26 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (
 		data[i].Value = writeDS[i].Value + readDS[i].Value
 	}
 	result := stats.Mean(data, length)
-	max := stats.Max(data, length)
-	min := stats.Min(data, length)
 	deviation := stats.Deviation(data, length)
+	deviation += result
 
-	if (max-deviation) > result || (min+deviation) < result {
-		return result, HEALTHY, nil
-	} else {
-		if result < 6000 {
-			return result, HEALTHY, nil
-		} else if result > 6000 && result < 14000 {
-			return result, DEGRADED, nil
-		} else {
-			return result, ERROR, nil
-		}
+	status := HEALTHY
+	devStatus := HEALTHY
+	limitYellow := 6000.00
+	limitRed := 14000.00
+
+	if deviation > limitRed {
+		status = ERROR
+	} else if deviation >= limitYellow && deviation <= limitRed {
+		status = DEGRADED
 	}
+
+	if result > limitRed {
+		status = ERROR
+	} else if result >= limitYellow && result <= limitRed {
+		status = DEGRADED
+	}
+	return result, status, deviation, devStatus, nil
 }
 
 func verifyMonitorCounts(queue *queue.MetricQueue, length int) (float64, int, error) {
@@ -142,30 +152,55 @@ func verifyMonitorCounts(queue *queue.MetricQueue, length int) (float64, int, er
 	}
 }
 
-func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (float64, int, error) {
+func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (float64, int, float64, int, error) {
 
 	commit := queue.GetNNewestTupel(length)
-	max := stats.Max(commit, length)
+	result := stats.Mean(commit, length)
+	deviation := stats.Deviation(commit, length)
+	deviation += result
 
-	if max > 50 {
-		return max, ERROR, nil
-	} else if max >= 10 && max <= 50 {
-		return max, DEGRADED, nil
-	} else {
-		return max, HEALTHY, nil
+	status := HEALTHY
+	devStatus := HEALTHY
+	limitYellow := 10.00
+	limitRed := 50.00
+
+	if deviation > limitRed {
+		status = ERROR
+	} else if deviation >= limitYellow && deviation <= limitRed {
+		status = DEGRADED
 	}
+
+	if result > limitRed {
+		status = ERROR
+	} else if result >= limitYellow && result <= limitRed {
+		status = DEGRADED
+	}
+	return result, status, deviation, devStatus, nil
 }
-func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (float64, int, error) {
-	apply := queue.GetNNewestTupel(length)
-	max := stats.Max(apply, length)
 
-	if max > 50 {
-		return max, ERROR, nil
-	} else if max >= 10 && max <= 50 {
-		return max, DEGRADED, nil
-	} else {
-		return max, HEALTHY, nil
+func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (float64, int, float64, int, error) {
+	apply := queue.GetNNewestTupel(length)
+	result := stats.Mean(apply, length)
+	deviation := stats.Deviation(apply, length)
+	deviation += result
+
+	status := HEALTHY
+	devStatus := HEALTHY
+	limitYellow := 10.00
+	limitRed := 50.00
+
+	if deviation > limitRed {
+		status = ERROR
+	} else if deviation >= limitYellow && deviation <= limitRed {
+		status = DEGRADED
 	}
+
+	if result > limitRed {
+		status = ERROR
+	} else if result >= limitYellow && result <= limitRed {
+		status = DEGRADED
+	}
+	return result, status, deviation, devStatus, nil
 }
 
 func verifyCephHealth(queue *queue.MetricQueue, length int) (float64, int, error) {
