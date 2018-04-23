@@ -48,7 +48,7 @@ Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(rate(ceph_osd_op_r%5
 
 [Endpoints.Endpoint10]
 Name="CEPH_health"
-Path="/api/datasources/proxy/1/api/v1/query_range?query=count(ceph_health_status)"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_health_status"
 [Endpoints.Endpoint11]
 Name="OSDInQuorum"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_in)"

@@ -12,7 +12,7 @@ func FloatToStr(fv float64) string {
 }
 
 func MappingToArray(dataArray []queue.MetricTupel, number int) stats.Float64Data {
-	data := make(stats.Float64Data, 0, number)
+	data := make(stats.Float64Data, number)
 	for i := 0; i < number; i++ {
 		data[(number-1)-i] = dataArray[len(dataArray)-1-i].Value
 	}

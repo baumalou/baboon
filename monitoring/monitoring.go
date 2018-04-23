@@ -44,6 +44,7 @@ func MonitorCluster(config *configuration.Config) {
 		now := int(time.Now().Unix())
 		for _, endpoint := range config.Endpoints {
 			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
+			verifier.VerifyClusterStatus(datasets)
 		}
 
 		time.Sleep(10 * time.Second)
