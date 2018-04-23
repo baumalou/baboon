@@ -1,6 +1,7 @@
 package fio
 
 import (
+	"log"
 	"strings"
 
 	"git.workshop21.ch/go/abraxas/logging"
@@ -8,8 +9,15 @@ import (
 )
 
 // RunSmall Executes small fio file located in /app/fio
-func RunFioAndGenPlot(size, mode string) error {
-	res, err := bashexecuter.Execute("/app/fio/fio-" + mode + "-" + size + ".sh")
+func RunFioAndGenPlot(size, mode, bsize string) error {
+	var res string
+	var err error
+	if bsize == "notSet" {
+		res, err = bashexecuter.Execute("/app/fio/fio-" + mode + "-" + size + ".sh")
+	} else {
+		res, err = bashexecuter.Execute("/app/fio/fio-" + mode + "-" + size + ".sh " + bsize)
+	}
+	log.Println("/app/fio/fio-" + mode + "-" + size + ".sh " + bsize)
 	if err != nil && strings.Contains(res, "fail") {
 		logging.WithError("BA-OPERATOR-FIO-SMALL-001", err).Panicln(res)
 		return err
