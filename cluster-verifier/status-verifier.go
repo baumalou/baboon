@@ -3,6 +3,8 @@ package verifier
 import (
 	"strconv"
 
+	"time"
+
 	"git.workshop21.ch/go/abraxas/logging"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
 	stats "git.workshop21.ch/workshop21/ba/operator/statistics"
@@ -100,7 +102,7 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 	}
 
 	daysRemainingCap := predictDaysToCapacitiyLimit(dataset["Av_capacity"].Queue.Dataset)
-	logging.WithID("BA-OPERATOR-VERIFIER-15").Info("Predicted Day until Memory: " + statusToStr(capStatus))
+	logging.WithID("BA-OPERATOR-VERIFIER-15").Info("Predicted Day until Memory: " + statusToStr(daysRemainingCap))
 
 	if red >= 1 {
 		return ERROR, err
@@ -111,11 +113,15 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 	}
 }
 
-func predictDaysToCapacitiyLimit(data []queue.MetricTupel) int{
-	timestamp := stats.ForecastRegression(dataArray []queue.MetricTupel)
-	pred := time.unix(timestamp, 0)
-	diff := pred.sub(time.now())
-	return int(diff.Hours()/24)
+func predictDaysToCapacitiyLimit(data []queue.MetricTupel) int {
+	timestamp, err := stats.ForecastRegression(data)
+	if err != nil {
+		logging.WithError("BA-OPERATOR-VERIFIER-16", err).Error(err)
+		return 0
+	}
+	pred := time.Unix(int64(timestamp), 0)
+	diff := pred.Sub(time.Now())
+	return int(diff.Hours() / 24)
 }
 
 func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (float64, int, float64, int, error) {

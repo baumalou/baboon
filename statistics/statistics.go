@@ -36,7 +36,7 @@ func Deviation(dataArray []queue.MetricTupel, number int) float64 {
 }
 
 // Forecast
-func ForecastRegression(dataArray []queue.MetricTupel) int {
+func ForecastRegression(dataArray []queue.MetricTupel) (int, error) {
 	r := new(regression.Regression)
 	r.SetObserved("Timestamp")
 	r.SetVar(0, "Capacity")
@@ -47,5 +47,5 @@ func ForecastRegression(dataArray []queue.MetricTupel) int {
 	}
 	r.Run()
 	prediction, err := r.Predict([]float64{float64(80)})
-	return int(prediction)
+	return int(prediction), err
 }
