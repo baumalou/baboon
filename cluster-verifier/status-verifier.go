@@ -18,7 +18,7 @@ const (
 )
 
 // VerifyClusterStatus func cluster
-func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, error) {
+func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, error) {
 	length := 20
 	logging.WithID("BA-OPERATOR-VERIFIER-01").Info("verifier started")
 
@@ -50,9 +50,13 @@ func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, error) {
 	} else if iopsStatus == DEGRADED || monStatus == DEGRADED || commitStatus == DEGRADED || applyStatus == DEGRADED || healthStatus == DEGRADED || orphanStatus == DEGRADED || infraStatus == DEGRADED {
 		status = DEGRADED
 	}
-
-	logging.WithID("BA-OPERATOR-VERIFIER-14").Info("Result: " + statusToStr(status))
-	return status, err
+	warning := HEALTHY
+	if iopsWarning == ERROR || commitWarning == ERROR || applyWarning == ERROR {
+		warning = ERROR
+	} else if iopsWarning == DEGRADED || commitWarning == DEGRADED || applyWarning == DEGRADED {
+		warning = DEGRADED
+	}
+	return status, warning, err
 
 }
 
@@ -120,8 +124,8 @@ func predictDaysToCapacitiyLimit(data []queue.MetricTupel) int {
 		return 0
 	}
 	pred := time.Unix(int64(timestamp), 0)
-	diff := pred.Sub(time.Now())
-	return int(diff.Hours() / 24)
+	diff := time.Until(pred)
+	return int(diff.Hours()/24) / 1000
 }
 
 func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (float64, int, float64, int, error) {

@@ -52,9 +52,15 @@ func MonitorCluster(config *configuration.Config) {
 }
 
 func VerifyClusterStatus() bool {
-	status, err := verifier.VerifyClusterStatus(datasets)
+	status, warning, err := verifier.VerifyClusterStatus(datasets)
 	if err != nil {
 		logging.WithError("BA-OPERATOR-MONITOR-003", err).Fatalln("not able to determine Cluster state", err)
+	}
+	switch warning {
+	case verifier.DEGRADED:
+		logging.WithID("BA-OPERATOR-MONITOR-005").Println("Cluster is nearly Degraded: ", warning)
+	case verifier.ERROR:
+		logging.WithID("BA-OPERATOR-MONITOR-005").Println("Cluster is nearly in Error State: ", warning)
 	}
 	switch status {
 	case verifier.HEALTHY:
