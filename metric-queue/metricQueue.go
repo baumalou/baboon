@@ -64,6 +64,9 @@ func (mq *MetricQueue) InsertMonitoringTupelInQueue(tupelArray []MetricTupel) {
 }
 
 func (mq *MetricQueue) GetNNewestTupel(n int) []MetricTupel {
+	if mq == nil || mq.Dataset == nil {
+		return make([]MetricTupel, n)
+	}
 	length := len(mq.Dataset)
 	data := make([]MetricTupel, n)
 	if !sort.IsSorted(mq) {
