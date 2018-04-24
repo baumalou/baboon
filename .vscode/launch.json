@@ -5,15 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch",
+            "name": "goLaunch",
             "type": "go",
             "request": "launch",
             "mode": "debug",
             "remotePath": "",
             "port": 2345,
             "host": "127.0.0.1",
-            "program": "${fileDirname}",
-            "env": {},
+            "program": "${workspaceFolder}",
+            "env": {
+                "ENV":"LOCAL"
+            },
             "args": [],
             "showLog": true
         }
