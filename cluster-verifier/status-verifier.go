@@ -92,7 +92,7 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 		red += 3
 	}
 
-	net, netStatus, err := verifyNetworkUsage(dataset["networkReceive"].Queue, dataset["networkSend"].Queue, length)
+	net, netStatus, err := verifyNetworkUsage(dataset["networkTransmit"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-06").Info("NetUsage: " + util.FloatToStr(net) + " " + statusToStr(netStatus))
 	if netStatus == DEGRADED {
 		yellow += 2
@@ -168,6 +168,7 @@ func verifyMonitorCounts(queue *queue.MetricQueue, length int) (float64, int, er
 
 	if min < 2 {
 		return min, ERROR, nil
+
 	} else if min < 3 {
 		return min, DEGRADED, nil
 	} else {
@@ -289,14 +290,8 @@ func verifyMemUsage(queue *queue.MetricQueue, length int) (float64, int, error) 
 		return result, HEALTHY, nil
 	}
 }
-func verifyNetworkUsage(rec *queue.MetricQueue, send *queue.MetricQueue, length int) (float64, int, error) {
-	recDS := rec.GetNNewestTupel(length)
-	sendDS := send.GetNNewestTupel(length)
-	data := make([]queue.MetricTupel, length)
-	for i := 0; i < length; i++ {
-		data[i].Timestamp = recDS[i].Timestamp
-		data[i].Value = (sendDS[i].Value + recDS[i].Value) / 1250000000 * 100
-	}
+func verifyNetworkUsage(transmit *queue.MetricQueue, length int) (float64, int, error) {
+	data := transmit.GetNNewestTupel(length)
 	result := stats.Mean(data, length)
 	//max := stats.Max(data, length)
 	//min := stats.Min(data, length)
