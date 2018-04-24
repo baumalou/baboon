@@ -84,9 +84,9 @@ func monitorRoutine(mq *queue.MetricQueue, config *configuration.Config, endpoin
 }
 
 func fillDataset(datasets *map[string]queue.Dataset, config *configuration.Config) {
-	now := int(time.Now().Unix())
-	for _, endpoint := range config.Endpoints {
 
+	for _, endpoint := range config.Endpoints {
+		now := int(time.Now().Unix())
 		data := getMonitoringData(config, endpoint.Path, now, 3600)
 		monQueue := queue.NewMetricQueue()
 		//queue := lang.NewQueue()
