@@ -81,6 +81,16 @@ func (mq *MetricQueue) Sort() {
 	if !sort.IsSorted(mq) {
 		sort.Sort(mq)
 	}
+	for {
+		if len(mq.Dataset) < 1 {
+			return
+		}
+		if mq.Dataset[0].Timestamp == 0 {
+			mq.removeOldestItem()
+		} else {
+			return
+		}
+	}
 }
 
 func (mq *MetricQueue) Push(tupel MetricTupel) {
