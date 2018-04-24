@@ -18,7 +18,7 @@ const (
 )
 
 // VerifyClusterStatus func cluster
-func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, error) {
+func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, error) {
 	length := 20
 	logging.WithID("BA-OPERATOR-VERIFIER-01").Info("verifier started")
 
@@ -40,19 +40,26 @@ func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, error) {
 	orphan, orphanStatus, err := verifyOSDOrphan(dataset["OSDInQuorum"].Queue, dataset["OSD_UP"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-13").Info("Orphan: " + util.FloatToStr(orphan) + " " + statusToStr(orphanStatus))
 
+	down, downStatus, err := verifyOSDDown(dataset["OSD_UP"].Queue, dataset["OSDInQuorum"].Queue, length)
+	logging.WithID("BA-OPERATOR-VERIFIER-17").Info("Down: " + util.FloatToStr(down) + " " + statusToStr(downStatus))
+
 	infraStatus, err := VerfiyInfrastructureStatus(dataset, length)
 
 	logging.WithID("BA-OPERATOR-VERIFIER-02").Info("verifier finished")
 
 	status := HEALTHY
-	if iopsStatus == ERROR || monStatus == ERROR || commitStatus == ERROR || applyStatus == ERROR || healthStatus == ERROR || orphanStatus == ERROR || infraStatus == ERROR {
+	if iopsStatus == ERROR || monStatus == ERROR || commitStatus == ERROR || applyStatus == ERROR || healthStatus == ERROR || orphanStatus == ERROR || downStatus == ERROR || infraStatus == ERROR {
 		status = ERROR
-	} else if iopsStatus == DEGRADED || monStatus == DEGRADED || commitStatus == DEGRADED || applyStatus == DEGRADED || healthStatus == DEGRADED || orphanStatus == DEGRADED || infraStatus == DEGRADED {
+	} else if iopsStatus == DEGRADED || monStatus == DEGRADED || commitStatus == DEGRADED || applyStatus == DEGRADED || healthStatus == DEGRADED || orphanStatus == DEGRADED || downStatus == DEGRADED || infraStatus == DEGRADED {
 		status = DEGRADED
 	}
-
-	logging.WithID("BA-OPERATOR-VERIFIER-14").Info("Result: " + statusToStr(status))
-	return status, err
+	warning := HEALTHY
+	if iopsWarning == ERROR || commitWarning == ERROR || applyWarning == ERROR {
+		warning = ERROR
+	} else if iopsWarning == DEGRADED || commitWarning == DEGRADED || applyWarning == DEGRADED {
+		warning = DEGRADED
+	}
+	return status, warning, err
 
 }
 
@@ -85,7 +92,7 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 		red += 3
 	}
 
-	net, netStatus, err := verifyNetworkUsage(dataset["networkReceive"].Queue, dataset["networkSend"].Queue, length)
+	net, netStatus, err := verifyNetworkUsage(dataset["networkTransmit"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-06").Info("NetUsage: " + util.FloatToStr(net) + " " + statusToStr(netStatus))
 	if netStatus == DEGRADED {
 		yellow += 2
@@ -120,8 +127,8 @@ func predictDaysToCapacitiyLimit(data []queue.MetricTupel) int {
 		return 0
 	}
 	pred := time.Unix(int64(timestamp), 0)
-	diff := pred.Sub(time.Now())
-	return int(diff.Hours() / 24)
+	diff := time.Until(pred)
+	return int(diff.Hours()/24) / 1000
 }
 
 func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (float64, int, float64, int, error) {
@@ -161,6 +168,7 @@ func verifyMonitorCounts(queue *queue.MetricQueue, length int) (float64, int, er
 
 	if min < 2 {
 		return min, ERROR, nil
+
 	} else if min < 3 {
 		return min, DEGRADED, nil
 	} else {
@@ -282,14 +290,8 @@ func verifyMemUsage(queue *queue.MetricQueue, length int) (float64, int, error) 
 		return result, HEALTHY, nil
 	}
 }
-func verifyNetworkUsage(rec *queue.MetricQueue, send *queue.MetricQueue, length int) (float64, int, error) {
-	recDS := rec.GetNNewestTupel(length)
-	sendDS := send.GetNNewestTupel(length)
-	data := make([]queue.MetricTupel, length)
-	for i := 0; i < length; i++ {
-		data[i].Timestamp = recDS[i].Timestamp
-		data[i].Value = (sendDS[i].Value + recDS[i].Value) / 1250000000 * 100
-	}
+func verifyNetworkUsage(transmit *queue.MetricQueue, length int) (float64, int, error) {
+	data := transmit.GetNNewestTupel(length)
 	result := stats.Mean(data, length)
 	//max := stats.Max(data, length)
 	//min := stats.Min(data, length)
@@ -311,6 +313,33 @@ func verifyOSDOrphan(in *queue.MetricQueue, up *queue.MetricQueue, length int) (
 	for i := 0; i < length; i++ {
 		data[i].Timestamp = upDS[i].Timestamp
 		data[i].Value = upDS[i].Value - inDS[i].Value
+		if data[i].Value < 0 {
+			data[i].Value = 0
+		}
+	}
+	//result := stats.Mean(data, length)
+	max := stats.Max(data, length)
+	//min := stats.Min(data, length)
+	//deviation := stats.Deviation(data, length)
+
+	if max > 1 {
+		return max, ERROR, nil
+	} else if max == 1 {
+		return max, DEGRADED, nil
+	} else {
+		return max, HEALTHY, nil
+	}
+}
+func verifyOSDDown(up *queue.MetricQueue, in *queue.MetricQueue, length int) (float64, int, error) {
+	inDS := in.GetNNewestTupel(length)
+	upDS := up.GetNNewestTupel(length)
+	data := make([]queue.MetricTupel, length)
+	for i := 0; i < length; i++ {
+		data[i].Timestamp = upDS[i].Timestamp
+		data[i].Value = inDS[i].Value - upDS[i].Value
+		if data[i].Value < 0 {
+			data[i].Value = 0
+		}
 	}
 	//result := stats.Mean(data, length)
 	max := stats.Max(data, length)
