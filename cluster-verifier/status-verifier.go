@@ -134,6 +134,10 @@ func predictDaysToCapacitiyLimit(data []queue.MetricTupel) int {
 func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (float64, int, float64, int, error) {
 	writeDS := write.GetNNewestTupel(length)
 	readDS := read.GetNNewestTupel(length)
+	if len(writeDS) == 0 || len(readDS) == 0 {
+		return 0, HEALTHY, 0, HEALTHY, nil
+	}
+
 	data := make([]queue.MetricTupel, length)
 	for i := 0; i < length; i++ {
 		data[i].Timestamp = writeDS[i].Timestamp
@@ -164,6 +168,9 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (
 
 func verifyMonitorCounts(queue *queue.MetricQueue, length int) (float64, int, error) {
 	data := queue.GetNNewestTupel(length)
+	if len(data) == 0 {
+		return 0, HEALTHY, nil
+	}
 	min := stats.Min(data, length)
 
 	if min < 2 {
@@ -180,6 +187,9 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (float64, int,
 
 	commit := queue.GetNNewestTupel(length)
 	result := stats.Mean(commit, length)
+	if len(commit) == 0 {
+		return 0, HEALTHY, 0, HEALTHY, nil
+	}
 	deviation := stats.Deviation(commit, length)
 	deviation += result
 
@@ -204,6 +214,9 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (float64, int,
 
 func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (float64, int, float64, int, error) {
 	apply := queue.GetNNewestTupel(length)
+	if len(apply) == 0 {
+		return 0, HEALTHY, 0, HEALTHY, nil
+	}
 	result := stats.Mean(apply, length)
 	deviation := stats.Deviation(apply, length)
 	deviation += result
@@ -229,6 +242,9 @@ func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (float64, int, 
 
 func verifyCephHealth(queue *queue.MetricQueue, length int) (float64, int, error) {
 	health := queue.GetNNewestTupel(length)
+	if len(health) == 0 {
+		return 0, HEALTHY, nil
+	}
 	max := stats.Max(health, length)
 
 	if max == 2 {
@@ -243,6 +259,9 @@ func verifyCephHealth(queue *queue.MetricQueue, length int) (float64, int, error
 func verifyCPUUsage(queue *queue.MetricQueue, length int) (float64, int, error) {
 
 	usage := queue.GetNNewestTupel(length)
+	if len(usage) == 0 {
+		return 0, HEALTHY, nil
+	}
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
@@ -260,6 +279,9 @@ func verifyCPUUsage(queue *queue.MetricQueue, length int) (float64, int, error) 
 func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (float64, int, error) {
 
 	usage := queue.GetNNewestTupel(length)
+	if len(usage) == 0 {
+		return 0, HEALTHY, nil
+	}
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
@@ -277,6 +299,9 @@ func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (float64, int, er
 func verifyMemUsage(queue *queue.MetricQueue, length int) (float64, int, error) {
 
 	usage := queue.GetNNewestTupel(length)
+	if len(usage) == 0 {
+		return 0, HEALTHY, nil
+	}
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
@@ -292,6 +317,9 @@ func verifyMemUsage(queue *queue.MetricQueue, length int) (float64, int, error) 
 }
 func verifyNetworkUsage(transmit *queue.MetricQueue, length int) (float64, int, error) {
 	data := transmit.GetNNewestTupel(length)
+	if len(data) == 0 {
+		return 0, HEALTHY, nil
+	}
 	result := stats.Mean(data, length)
 	//max := stats.Max(data, length)
 	//min := stats.Min(data, length)
@@ -309,6 +337,9 @@ func verifyNetworkUsage(transmit *queue.MetricQueue, length int) (float64, int, 
 func verifyOSDOrphan(in *queue.MetricQueue, up *queue.MetricQueue, length int) (float64, int, error) {
 	inDS := in.GetNNewestTupel(length)
 	upDS := up.GetNNewestTupel(length)
+	if len(inDS) == 0 || len(upDS) == 0 {
+		return 0, HEALTHY, nil
+	}
 	data := make([]queue.MetricTupel, length)
 	for i := 0; i < length; i++ {
 		data[i].Timestamp = upDS[i].Timestamp
@@ -333,6 +364,9 @@ func verifyOSDOrphan(in *queue.MetricQueue, up *queue.MetricQueue, length int) (
 func verifyOSDDown(up *queue.MetricQueue, in *queue.MetricQueue, length int) (float64, int, error) {
 	inDS := in.GetNNewestTupel(length)
 	upDS := up.GetNNewestTupel(length)
+	if len(inDS) == 0 || len(upDS) == 0 {
+		return 0, HEALTHY, nil
+	}
 	data := make([]queue.MetricTupel, length)
 	for i := 0; i < length; i++ {
 		data[i].Timestamp = upDS[i].Timestamp
@@ -357,6 +391,9 @@ func verifyOSDDown(up *queue.MetricQueue, in *queue.MetricQueue, length int) (fl
 func verifyCapUsage(queue *queue.MetricQueue, length int) (float64, int, error) {
 
 	usage := queue.GetNNewestTupel(length)
+	if len(usage) == 0 {
+		return 0, HEALTHY, nil
+	}
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
