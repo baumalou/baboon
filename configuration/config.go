@@ -30,6 +30,9 @@ type Config struct {
 	WebPort               string
 	WebPath               string
 	SampleInterval        int
+	RookOSDSelector       string
+	RookMonSelector       string
+	RookNamespace         string
 }
 type Endpoint struct {
 	Name string

@@ -11,6 +11,9 @@ AerospikeHost = "ba-aerospike-0.ba-aerospike"
 AerospikePort = 3000
 AerospikeNamespace = "ba"
 SampleInterval = 10
+RookOSDSelector = "app=rook-ceph-osd"
+RookMonSelector = "app=rook-ceph-mon"
+RookNamespace = "rook"
 
 WebPort   =            "80"
 WebPath  =             "/app/pictures"
