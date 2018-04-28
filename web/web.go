@@ -9,14 +9,19 @@ import (
 	"git.workshop21.ch/workshop21/ba/operator/fio-go"
 
 	"git.workshop21.ch/go/abraxas/logging"
+	"github.com/asaskevich/govalidator"
 	"github.com/gorilla/mux"
 
+	verifier "git.workshop21.ch/workshop21/ba/operator/cluster-verifier"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
+	"git.workshop21.ch/workshop21/ba/operator/kubeclient"
 	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 )
 
 var mutex *sync.Mutex
 var running bool
+var kc *kubeclient.KubeClient
+var config *configuration.Config
 
 func getMutex() *sync.Mutex {
 	if mutex == nil {
@@ -44,6 +49,7 @@ func Serve(config *configuration.Config) {
 	router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir(directory))))
 	router.HandleFunc("/run/{mode}/{size}", RunSmall).Methods("GET")
 	router.HandleFunc("/getqueue/{endpoint}", PrintQueue).Methods("GET")
+	router.HandleFunc("/getClusterState/{time}", GetClusterState).Methods("GET")
 	router.HandleFunc("/run/{mode}/{size}/{bsize}", RunSmall).Methods("GET")
 	logging.WithID("BA-OPERATOR-FILESERV-001").Printf("Serving %s on HTTP port: %s\n", directory, port)
 	logging.WithID("BA-OPERATOR-FILESERV-FATAL").Errorln(http.ListenAndServe(":"+port, router))
@@ -92,15 +98,48 @@ func PrintQueue(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(dataset.Queue.PrintQueue()))
 }
 
+func GetClusterState(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	if govalidator.IsInt(params["time"]) {
+		state, err := verifier.GetClusterStatusLastNSeconds(params["time"])
+		if err != nil {
+			w.Write([]byte("could not get status of cluster"))
+			return
+		}
+		w.Write([]byte(state))
+		return
+	}
+	w.Write([]byte("Param is not integer"))
+	return
+
+}
+
 func handleEndpoint(mode, size, bsize string, w http.ResponseWriter) {
+	var err error
 	if mode == "seq" {
 		w.Write([]byte(mode + " " + size + " started"))
 		go runFio(size, mode, bsize)
-		return
 	} else if mode == "rand" {
 		w.Write([]byte(mode + " " + size + " started"))
 		go runFio(size, mode, bsize)
+	} else {
+		w.Write([]byte("wrong mode.\nallowed modes: seq, rand"))
 		return
 	}
-	w.Write([]byte("wrong mode.\nallowed modes: seq, rand"))
+	kc, err = kubeclient.GetKubeClient(kc)
+	if err != nil {
+		w.Write([]byte("not able to get kubeclient " + err.Error()))
+		return
+	}
+	config, err = configuration.ReadConfig(config)
+	if err != nil {
+		w.Write([]byte("not able to get configuration " + err.Error()))
+		return
+	}
+	err = kc.KillOnePodOf(config.RookOSDSelector)
+	if err != nil {
+		w.Write([]byte("not able to kill a pod out of " + config.RookOSDSelector + err.Error()))
+
+	}
+	return
 }

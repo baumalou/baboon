@@ -63,6 +63,11 @@ func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, error) {
 
 }
 
+// GetClusterStatusLastNSeconds prints the cluster status over the last n seconds from time.Now() on.
+func GetClusterStatusLastNSeconds(seconds int) (string, error) {
+	return "not yet implemented", nil
+}
+
 // VerfiyInfrastructureStatus func infrastructure
 func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (int, error) {
 	yellow := 0
