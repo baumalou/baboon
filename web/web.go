@@ -109,7 +109,7 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 
 		datasets := map[string]queue.Dataset{}
 
-		wg.Add(len(datasets))
+		wg.Add(len(config.Endpoints))
 		go getDataForSecs(&datasets, seconds)
 		wg.Wait()
 

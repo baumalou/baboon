@@ -164,7 +164,7 @@ func VerfiyInfrastructureStatus(struc *[]StatValues, dataset map[string]queue.Da
 		red++
 	}
 
-	daysRemainingCap := predictDaysToCapacitiyLimit(dataset["Av_capacity"].Queue.Dataset)
+	daysRemainingCap := predictDaysToCapacitiyLimit(dataset["Av_capacity"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-15").Info("Predicted Day until Memory: " + statusToStr(daysRemainingCap))
 
 	if red >= 1 {
@@ -176,8 +176,9 @@ func VerfiyInfrastructureStatus(struc *[]StatValues, dataset map[string]queue.Da
 	}
 }
 
-func predictDaysToCapacitiyLimit(data []queue.MetricTupel) int {
-	timestamp, err := stats.ForecastRegression(data)
+func predictDaysToCapacitiyLimit(data *queue.MetricQueue, length int) int {
+	cap := data.GetNNewestTupel(length)
+	timestamp, err := stats.ForecastRegression(cap)
 	if err != nil {
 		logging.WithError("BA-OPERATOR-VERIFIER-16", err).Error(err)
 		return 0
