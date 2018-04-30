@@ -51,10 +51,10 @@ func Serve(config *configuration.Config) {
 	flag.Parse()
 	router := mux.NewRouter()
 	router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir(directory))))
-	router.HandleFunc("/run/{mode}/{size}", RunSmall).Methods("GET")
+	router.HandleFunc("/run/{mode}/{component}", RunSmall).Methods("GET")
 	router.HandleFunc("/getqueue/{endpoint}", PrintQueue).Methods("GET")
 	router.HandleFunc("/getClusterState/{time}", GetClusterState).Methods("GET")
-	router.HandleFunc("/run/{mode}/{size}/{bsize}", RunSmall).Methods("GET")
+	router.HandleFunc("/run/{mode}/{component}/{bsize}", RunSmall).Methods("GET")
 	logging.WithID("BA-OPERATOR-FILESERV-001").Printf("Serving %s on HTTP port: %s\n", directory, port)
 	logging.WithID("BA-OPERATOR-FILESERV-FATAL").Errorln(http.ListenAndServe(":"+port, router))
 }
@@ -68,12 +68,8 @@ func RunSmall(w http.ResponseWriter, r *http.Request) {
 	if running {
 		w.Write([]byte("already process running"))
 		return
-	} else if monitoring.VerifyClusterStatus() && params["size"] == "small" {
-		handleEndpoint(params["mode"], params["size"], blockSize, w)
-	} else if monitoring.VerifyClusterStatus() && params["size"] == "medium" {
-		handleEndpoint(params["mode"], params["size"], blockSize, w)
-	} else if monitoring.VerifyClusterStatus() && params["size"] == "large" {
-		handleEndpoint(params["mode"], params["size"], blockSize, w)
+	} else if monitoring.VerifyClusterStatus() && strings.Contains("all,none,osd,mon", params["component"]) {
+		handleEndpoint(params["mode"], params["component"], blockSize, w)
 	} else if !monitoring.VerifyClusterStatus() {
 		w.Write([]byte("cluster not ready to run fio"))
 	} else {
@@ -142,21 +138,16 @@ func getDataForSecs(datasets *map[string]queue.Dataset, secs int) {
 	}
 }
 
-func handleEndpoint(mode, size, bsize string, w http.ResponseWriter) {
+func handleEndpoint(mode, component, bsize string, w http.ResponseWriter) {
 	var err error
 	if mode == "seq" {
-		w.Write([]byte(mode + " " + size + " started"))
-		go runFio(size, mode, bsize)
+		w.Write([]byte(mode + " " + bsize + " started"))
+		go runFio("small", mode, bsize)
 	} else if mode == "rand" {
-		w.Write([]byte(mode + " " + size + " started"))
-		go runFio(size, mode, bsize)
+		w.Write([]byte(mode + " " + bsize + " started"))
+		go runFio("small", mode, bsize)
 	} else {
 		w.Write([]byte("wrong mode.\nallowed modes: seq, rand"))
-		return
-	}
-	kc, err = kubeclient.GetKubeClient(kc)
-	if err != nil {
-		w.Write([]byte("\nnot able to get kubeclient " + err.Error()))
 		return
 	}
 	config, err = configuration.ReadConfig(config)
@@ -164,10 +155,26 @@ func handleEndpoint(mode, size, bsize string, w http.ResponseWriter) {
 		w.Write([]byte("\nnot able to get configuration " + err.Error()))
 		return
 	}
-	err = kc.KillOnePodOf(config.RookOSDSelector)
+	if strings.Contains("mon,all", component) {
+		killPod(config.RookMonSelector, w)
+	}
+	if strings.Contains("osd,all", component) {
+		killPod(config.RookOSDSelector, w)
+	}
+
+	return
+}
+
+func killPod(component string, w http.ResponseWriter) {
+	var err error
+	kc, err = kubeclient.GetKubeClient(kc)
 	if err != nil {
-		w.Write([]byte("\nnot able to kill a pod out of " + config.RookOSDSelector + err.Error()))
+		w.Write([]byte("\nnot able to get kubeclient " + err.Error()))
+		return
+	}
+	err = kc.KillOnePodOf(component)
+	if err != nil {
+		w.Write([]byte("\nnot able to kill a pod out of " + component + err.Error()))
 
 	}
-	return
 }
