@@ -83,11 +83,16 @@ func VerifyClusterStatus() bool {
 
 func monitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int, secs int) {
 	defer wg.Done()
-	MonitorRoutineSecs(mq, config, endpoint, timeTo, secs)
-}
-func MonitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int, secs int) {
 	data := getMonitoringData(config, endpoint, timeTo, secs)
 	mq.AddMonitoringTupelSliceToDataset(data)
+	mq.Sort()
+}
+
+// ATTENTION!!!
+// MonitorRoutineSecs inserts data to de provided queue
+func MonitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int, secs int) {
+	data := getMonitoringData(config, endpoint, timeTo, secs)
+	mq.InsertMonitoringTupelInQueue(data)
 	mq.Sort()
 }
 
