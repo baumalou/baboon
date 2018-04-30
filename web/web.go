@@ -130,7 +130,7 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getDataForSecs(datasets *map[string]queue.Dataset, endpoint Endpoint, secs int) {
+func getDataForSecs(datasets *map[string]queue.Dataset, endpoint configuration.Endpoint, secs int) {
 	defer wg.Done()
 
 	monQueue := queue.NewMetricQueue()
