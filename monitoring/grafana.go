@@ -6,18 +6,16 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"time"
 
 	"git.workshop21.ch/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/model"
 )
 
-func getGrafanaResultset(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) (model.GrafanaResult, error) {
+func GetGrafanaResultset(config *configuration.Config, endpoint string, timeStampTo, secondsInPast int) (model.GrafanaResult, error) {
 	result := model.GrafanaResult{}
-	startTime := -time.Duration(hoursInPast) * time.Second
-	start := int(time.Now().Add(startTime).Unix())
-	url := config.MonitoringHost + endpoint + "&start=" + strconv.Itoa(start) + "&end=" + strconv.Itoa(timeStampTo) + "&step=" + config.SamplingStepSize
+	startTime := timeStampTo - secondsInPast
+	url := config.MonitoringHost + endpoint + "&start=" + strconv.Itoa(startTime) + "&end=" + strconv.Itoa(timeStampTo) + "&step=" + config.SamplingStepSize
 	logging.WithIDFields("PERF-OP-2").Debug(url)
 	var bearer = "Bearer " + config.BearerToken
 	req, err := http.NewRequest("GET", url, nil)

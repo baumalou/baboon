@@ -3,6 +3,7 @@ package web
 import (
 	"flag"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -101,7 +102,12 @@ func PrintQueue(w http.ResponseWriter, r *http.Request) {
 func GetClusterState(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	if govalidator.IsInt(params["time"]) {
-		state, err := verifier.GetClusterStatusLastNSeconds(params["time"])
+		seconds, err := strconv.Atoi(params["time"])
+		if err != nil {
+			w.Write([]byte("could not get int of time parameter"))
+			return
+		}
+		state, err := verifier.GetClusterStatusLastNSeconds(seconds)
 		if err != nil {
 			w.Write([]byte("could not get status of cluster"))
 			return
