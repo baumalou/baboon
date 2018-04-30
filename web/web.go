@@ -138,7 +138,7 @@ func getDataForSecs(datasets *map[string]queue.Dataset, secs int) {
 		monQueue := queue.NewMetricQueue()
 		(*datasets)[endpoint.Name] = queue.Dataset{Queue: monQueue, Name: endpoint.Name}
 		now := int(time.Now().Unix())
-		monitoring.MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, secs)
+		monitoring.MonitorRoutineSecs((*datasets)[endpoint.Name].Queue, config, endpoint.Path, now, secs)
 	}
 }
 
