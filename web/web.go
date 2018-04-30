@@ -146,17 +146,17 @@ func handleEndpoint(mode, size, bsize string, w http.ResponseWriter) {
 	}
 	kc, err = kubeclient.GetKubeClient(kc)
 	if err != nil {
-		w.Write([]byte("not able to get kubeclient " + err.Error()))
+		w.Write([]byte("\nnot able to get kubeclient " + err.Error()))
 		return
 	}
 	config, err = configuration.ReadConfig(config)
 	if err != nil {
-		w.Write([]byte("not able to get configuration " + err.Error()))
+		w.Write([]byte("\nnot able to get configuration " + err.Error()))
 		return
 	}
 	err = kc.KillOnePodOf(config.RookOSDSelector)
 	if err != nil {
-		w.Write([]byte("not able to kill a pod out of " + config.RookOSDSelector + err.Error()))
+		w.Write([]byte("\nnot able to kill a pod out of " + config.RookOSDSelector + err.Error()))
 
 	}
 	return
