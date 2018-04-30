@@ -32,15 +32,15 @@ func getStatValues(name string, value float64, valueStatus int, devValue float64
 
 func StatValuesToString(struc StatValues) string {
 	if struc.devValue != 0.00 {
-		return struc.name + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus) + " " + util.FloatToStr(struc.devValue) + " " + statusToStr(struc.devStatus)
+		return struc.name + ": " + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus) + " " + util.FloatToStr(struc.devValue) + " " + statusToStr(struc.devStatus)
 	} else {
-		return struc.name + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus)
+		return struc.name + ": " + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus)
 	}
 }
 func StatValuesArrayToString(struc []StatValues) string {
 	ret := ""
 	for i := 0; i < len(struc); i++ {
-		ret += StatValuesToString(struc[i]) + "/n"
+		ret += StatValuesToString(struc[i]) + "\n"
 	}
 	return ret
 }

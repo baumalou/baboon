@@ -25,6 +25,7 @@ var mutex *sync.Mutex
 var running bool
 var kc *kubeclient.KubeClient
 var config *configuration.Config
+var wg sync.WaitGroup
 
 func getMutex() *sync.Mutex {
 	if mutex == nil {
@@ -111,12 +112,12 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 		}
 
 		datasets := map[string]queue.Dataset{}
-		monitoring.FillDataset(&datasets, config)
 
-		for _, endpoint := range config.Endpoints {
-			now := int(time.Now().Unix())
-			monitoring.MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, seconds)
-		}
+		wg.Add(len(datasets))
+		monitoring.FillDataset(&datasets, config)
+		go getDataForSecs(&datasets, seconds)
+		wg.Wait()
+
 		_, _, data, err := verifier.VerifyClusterStatus(datasets)
 		state := verifier.StatValuesArrayToString(data)
 
@@ -130,6 +131,14 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Param is not integer"))
 	return
 
+}
+
+func getDataForSecs(datasets *map[string]queue.Dataset, secs int) {
+	for _, endpoint := range config.Endpoints {
+		now := int(time.Now().Unix())
+		monitoring.MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, seconds)
+	}
+	defer wg.Done()
 }
 
 func handleEndpoint(mode, size, bsize string, w http.ResponseWriter) {
