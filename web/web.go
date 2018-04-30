@@ -108,7 +108,11 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 		}
 
 		datasets := map[string]queue.Dataset{}
-
+		config, err = configuration.ReadConfig(config)
+		if err != nil {
+			w.Write([]byte("could not read config" + err.Error()))
+			return
+		}
 		wg.Add(len(config.Endpoints))
 		for _, endpoint := range config.Endpoints {
 			go getDataForSecs(&datasets, endpoint, seconds)
