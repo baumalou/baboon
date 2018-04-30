@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"git.workshop21.ch/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,6 +48,7 @@ func (kc *KubeClient) KillOnePodOf(selector string) error {
 		return err
 	}
 	oldestPod := getOldestPod(pods.Items)
+	logging.WithID("BA-OPERATOR-PODKILLER-001").Info("Name: ", oldestPod.Name)
 
 	return kc.Clientset.CoreV1().Pods(kc.SvcConfig.RookNamespace).Delete(oldestPod.Name, &metav1.DeleteOptions{})
 }
