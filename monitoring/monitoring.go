@@ -44,7 +44,7 @@ func MonitorCluster(config *configuration.Config) {
 
 		for _, endpoint := range config.Endpoints {
 			now := int(time.Now().Unix())
-			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
+			go MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, config.SampleInterval)
 		}
 
 		verifier.VerifyClusterStatus(datasets)
@@ -76,12 +76,6 @@ func VerifyClusterStatus() bool {
 	}
 	return false
 
-}
-
-func monitorRoutine(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int) {
-	data := getMonitoringData(config, endpoint, timeTo, config.SampleInterval)
-	mq.AddMonitoringTupelSliceToDataset(data)
-	mq.Sort()
 }
 
 func MonitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int, secs int) {
