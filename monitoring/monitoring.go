@@ -3,6 +3,7 @@ package monitoring
 import (
 	"errors"
 	"strconv"
+	"sync"
 	"time"
 
 	"git.workshop21.ch/go/abraxas/logging"
@@ -13,6 +14,8 @@ import (
 )
 
 var datasets map[string]queue.Dataset
+
+var wg sync.WaitGroup
 
 // GetDataset returns a COPY of a dataset
 func GetDataset(endpoint string) (queue.Dataset, error) {
@@ -41,12 +44,12 @@ func MonitorCluster(config *configuration.Config) {
 		getQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
 	for {
-
+		wg.Add(len(datasets))
 		for _, endpoint := range config.Endpoints {
 			now := int(time.Now().Unix())
-			go MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, config.SampleInterval)
+			go monitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, config.SampleInterval)
 		}
-
+		wg.Wait()
 		verifier.VerifyClusterStatus(datasets)
 		time.Sleep(10 * time.Second)
 	}
@@ -78,6 +81,10 @@ func VerifyClusterStatus() bool {
 
 }
 
+func monitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int, secs int) {
+	defer wg.Done()
+	MonitorRoutineSecs(mq, config, endpoint, timeTo, secs)
+}
 func MonitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int, secs int) {
 	data := getMonitoringData(config, endpoint, timeTo, secs)
 	mq.AddMonitoringTupelSliceToDataset(data)
