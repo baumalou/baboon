@@ -41,8 +41,9 @@ func MonitorCluster(config *configuration.Config) {
 		getQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
 	for {
-		now := int(time.Now().Unix())
+
 		for _, endpoint := range config.Endpoints {
+			now := int(time.Now().Unix())
 			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
 			verifier.VerifyClusterStatus(datasets)
 		}
@@ -113,7 +114,7 @@ func getQuantiles(dataset []queue.MetricTupel, config *configuration.Config) {
 
 func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) []queue.MetricTupel {
 
-	result, err := getGrafanaResultset(config, endpoint, timeStampTo, hoursInPast)
+	result, err := GetGrafanaResultset(config, endpoint, timeStampTo, hoursInPast)
 	if err != nil {
 		logging.WithError("PERF-OP-h9u349u43", err).Println(err)
 		return nil
