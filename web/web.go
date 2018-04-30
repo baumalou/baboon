@@ -134,11 +134,11 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDataForSecs(datasets *map[string]queue.Dataset, secs int) {
+	defer wg.Done()
 	for _, endpoint := range config.Endpoints {
 		now := int(time.Now().Unix())
-		monitoring.MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, seconds)
+		monitoring.MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, secs)
 	}
-	defer wg.Done()
 }
 
 func handleEndpoint(mode, size, bsize string, w http.ResponseWriter) {
