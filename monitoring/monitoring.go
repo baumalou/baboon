@@ -35,7 +35,7 @@ func GetEndpoints() []string {
 
 func MonitorCluster(config *configuration.Config) {
 	datasets = map[string]queue.Dataset{}
-	fillDataset(&datasets, config)
+	FillDataset(&datasets, config)
 	for _, endpoint := range config.Endpoints {
 		logging.WithID("BA-OPERATOR-MONITOR-" + endpoint.Name).Println("generating quantiles")
 		getQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
@@ -45,15 +45,15 @@ func MonitorCluster(config *configuration.Config) {
 		for _, endpoint := range config.Endpoints {
 			now := int(time.Now().Unix())
 			go monitorRoutine(datasets[endpoint.Name].Queue, config, endpoint.Path, now)
-			verifier.VerifyClusterStatus(datasets)
 		}
 
+		verifier.VerifyClusterStatus(datasets)
 		time.Sleep(10 * time.Second)
 	}
 }
 
 func VerifyClusterStatus() bool {
-	status, warning, err := verifier.VerifyClusterStatus(datasets)
+	status, warning, _, err := verifier.VerifyClusterStatus(datasets)
 	if err != nil {
 		logging.WithError("BA-OPERATOR-MONITOR-003", err).Fatalln("not able to determine Cluster state", err)
 	}
@@ -78,13 +78,19 @@ func VerifyClusterStatus() bool {
 
 }
 
-func MonitorRoutine(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int) {
+func monitorRoutine(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int) {
 	data := getMonitoringData(config, endpoint, timeTo, config.SampleInterval)
 	mq.AddMonitoringTupelSliceToDataset(data)
 	mq.Sort()
 }
 
-func fillDataset(datasets *map[string]queue.Dataset, config *configuration.Config) {
+func MonitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, endpoint string, timeTo int, secs int) {
+	data := getMonitoringData(config, endpoint, timeTo, secs)
+	mq.AddMonitoringTupelSliceToDataset(data)
+	mq.Sort()
+}
+
+func FillDataset(datasets *map[string]queue.Dataset, config *configuration.Config) {
 
 	for _, endpoint := range config.Endpoints {
 		now := int(time.Now().Unix())

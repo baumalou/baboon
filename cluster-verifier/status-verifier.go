@@ -8,10 +8,42 @@ import (
 	"git.workshop21.ch/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
-	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 	stats "git.workshop21.ch/workshop21/ba/operator/statistics"
 	"git.workshop21.ch/workshop21/ba/operator/util"
 )
+
+type StatValues struct {
+	name        string
+	value       float64
+	valueStatus int
+	devValue    float64
+	devStatus   int
+}
+
+func getStatValues(name string, value float64, valueStatus int, devValue float64, devStatus int) StatValues {
+	data := StatValues{}
+	data.name = name
+	data.value = value
+	data.valueStatus = valueStatus
+	data.devValue = devValue
+	data.devStatus = devStatus
+	return data
+}
+
+func StatValuesToString(struc StatValues) string {
+	if struc.devValue != 0.00 {
+		return struc.name + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus) + " " + util.FloatToStr(struc.devValue) + " " + statusToStr(struc.devStatus)
+	} else {
+		return struc.name + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus)
+	}
+}
+func StatValuesArrayToString(struc []StatValues) string{
+	ret := ""
+	for i := 0, i<len(struc); i++{
+		ret += StatValuesToString(struc[i]) + "/n"
+	}
+	return ret
+}
 
 const (
 	HEALTHY int = 1 + iota
@@ -23,38 +55,46 @@ var config *configuration.Config
 
 func getConfig() (*configuration.Config, error) {
 	if config == nil {
-		return configuration.ReadConfig()
+		return configuration.ReadConfig(config)
 	}
 	return config, nil
 }
 
 // VerifyClusterStatus func cluster
-func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, error) {
+func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, []StatValues, error) {
 	length := 20
 	logging.WithID("BA-OPERATOR-VERIFIER-01").Info("verifier started")
 
+	data := make([]StatValues, 12)
 	iops, iopsStatus, iopsDev, iopsWarning, err := verifyIOPS(dataset["IOPS_write"].Queue, dataset["IOPS_read"].Queue, length)
+	data[0] = getStatValues("iops", iops, iopsStatus, iopsDev, iopsWarning)
 	logging.WithID("BA-OPERATOR-VERIFIER-08").Info("IOPS: " + util.FloatToStr(iops) + " " + statusToStr(iopsStatus) + " " + util.FloatToStr(iopsDev) + " " + statusToStr(iopsWarning))
 
 	mon, monStatus, err := verifyMonitorCounts(dataset["Mon_quorum"].Queue, length)
+	data[1] = getStatValues("mon", mon, monStatus, 0.00, 0)
 	logging.WithID("BA-OPERATOR-VERIFIER-09").Info("MonCount: " + util.FloatToStr(mon) + " " + statusToStr(monStatus))
 
 	commit, commitStatus, commitDev, commitWarning, err := verifyOSDCommitLatency(dataset["AvOSDcommlat"].Queue, length)
+	data[2] = getStatValues("commit", commit, commitStatus, commitDev, commitWarning)
 	logging.WithID("BA-OPERATOR-VERIFIER-10").Info("CommitLat: " + util.FloatToStr(commit) + " " + statusToStr(commitStatus) + " " + util.FloatToStr(commitDev) + " " + statusToStr(commitWarning))
 
 	apply, applyStatus, applyDev, applyWarning, err := verifyOSDApplyLatency(dataset["AvOSDappllat"].Queue, length)
+	data[3] = getStatValues("apply", apply, applyStatus, applyDev, applyWarning)
 	logging.WithID("BA-OPERATOR-VERIFIER-12").Info("ApplyLat: " + util.FloatToStr(apply) + " " + statusToStr(applyStatus) + " " + util.FloatToStr(applyDev) + " " + statusToStr(applyWarning))
 
 	health, healthStatus, err := verifyCephHealth(dataset["CEPH_health"].Queue, length)
+	data[4] = getStatValues("health", health, healthStatus, 0.00, 0)
 	logging.WithID("BA-OPERATOR-VERIFIER-12").Info("CEPHHealth: " + util.FloatToStr(health) + " " + statusToStr(healthStatus))
 
 	orphan, orphanStatus, err := verifyOSDOrphan(dataset["OSDInQuorum"].Queue, dataset["OSD_UP"].Queue, length)
+	data[5] = getStatValues("orphan", orphan, orphanStatus, 0.00, 0)
 	logging.WithID("BA-OPERATOR-VERIFIER-13").Info("Orphan: " + util.FloatToStr(orphan) + " " + statusToStr(orphanStatus))
 
 	down, downStatus, err := verifyOSDDown(dataset["OSD_UP"].Queue, dataset["OSDInQuorum"].Queue, length)
+	data[6] = getStatValues("down", down, downStatus, 0.00, 0)
 	logging.WithID("BA-OPERATOR-VERIFIER-17").Info("Down: " + util.FloatToStr(down) + " " + statusToStr(downStatus))
 
-	infraStatus, err := VerfiyInfrastructureStatus(dataset, length)
+	infraStatus, err := VerfiyInfrastructureStatus(&data, dataset, length)
 
 	logging.WithID("BA-OPERATOR-VERIFIER-02").Info("verifier finished")
 
@@ -70,34 +110,18 @@ func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, error) {
 	} else if iopsWarning == DEGRADED || commitWarning == DEGRADED || applyWarning == DEGRADED {
 		warning = DEGRADED
 	}
-	return status, warning, err
-
-}
-
-// GetClusterStatusLastNSeconds prints the cluster status over the last n seconds from time.Now() on.
-func GetClusterStatusLastNSeconds(seconds int) (string, error) {
-	cfg, err := getConfig()
-	if err != nil {
-		logging.WithError("BA-OPERATOR-VERIFIER-04", err)
-	}
-
-	for _, endpoint := range config.Endpoints {
-		monQueue := queue.NewMetricQueue()
-		data, err := monitoring.MonitorRoutine(cfg, endpoint, time.Now().Unix(), seconds)
-
-		monQueue.InsertMonitoringTupelInQueue(data)
-		(*datasets)[endpoint.Name] = queue.Dataset{Queue: monQueue, Name: endpoint.Name}
-	}
-	return "not yet implemented", nil
+	return status, warning, data, err
 }
 
 // VerfiyInfrastructureStatus func infrastructure
-func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (int, error) {
+func VerfiyInfrastructureStatus(struc *[]StatValues, dataset map[string]queue.Dataset, length int) (int, error) {
 	yellow := 0
 	red := 0
+	values := *struc
 
 	cpu, cpuStatus, err := verifyCPUUsage(dataset["PercUsedCPU"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-03").Info("CPUUsage: " + util.FloatToStr(cpu) + " " + statusToStr(cpuStatus))
+	values[7] = getStatValues("cpu", cpu, cpuStatus, 0.00, 0)
 	if cpuStatus == DEGRADED {
 		yellow += 3
 	} else if cpuStatus == ERROR {
@@ -106,6 +130,7 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 
 	cores, coresStatus, err := verifyCPUCoresUsage(dataset["CPUCoresUsed"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-04").Info("CoresUsage: " + util.FloatToStr(cores) + " " + statusToStr(coresStatus))
+	values[8] = getStatValues("cores", cores, coresStatus, 0.00, 0)
 	if coresStatus == DEGRADED {
 		yellow += 3
 	} else if coresStatus == ERROR {
@@ -114,6 +139,7 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 
 	mem, memStatus, err := verifyMemUsage(dataset["UsePercOfMem"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-05").Info("MemUsage: " + util.FloatToStr(mem) + " " + statusToStr(memStatus))
+	values[9] = getStatValues("memory", mem, memStatus, 0.00, 0)
 	if memStatus == DEGRADED {
 		yellow += 3
 	} else if memStatus == ERROR {
@@ -122,6 +148,7 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 
 	net, netStatus, err := verifyNetworkUsage(dataset["networkTransmit"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-06").Info("NetUsage: " + util.FloatToStr(net) + " " + statusToStr(netStatus))
+	values[10] = getStatValues("network", net, netStatus, 0.00, 0)
 	if netStatus == DEGRADED {
 		yellow += 2
 	} else if netStatus == ERROR {
@@ -130,6 +157,7 @@ func VerfiyInfrastructureStatus(dataset map[string]queue.Dataset, length int) (i
 
 	cap, capStatus, err := verifyCapUsage(dataset["Av_capacity"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-07").Info("CapUsage: " + util.FloatToStr(cap) + " " + statusToStr(capStatus))
+	values[11] = getStatValues("capacity", cap, capStatus, 0.00, 0)
 	if capStatus == DEGRADED {
 		yellow++
 	} else if capStatus == ERROR {

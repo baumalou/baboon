@@ -6,8 +6,10 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"git.workshop21.ch/workshop21/ba/operator/fio-go"
+	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
 
 	"git.workshop21.ch/go/abraxas/logging"
 	"github.com/asaskevich/govalidator"
@@ -107,7 +109,17 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("could not get int of time parameter"))
 			return
 		}
-		state, err := verifier.GetClusterStatusLastNSeconds(seconds)
+
+		datasets = map[string]queue.Dataset{}
+		monitoring.FillDataset(&datasets, config)
+
+		for _, endpoint := range config.Endpoints {
+			now := int(time.Now().Unix())
+			monitoring.MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, seconds)
+		}
+		_, _, data, err := verifier.VerifyClusterStatus(datasets)
+		state := verifier.StatValuesArrayToString(data)
+
 		if err != nil {
 			w.Write([]byte("could not get status of cluster"))
 			return
