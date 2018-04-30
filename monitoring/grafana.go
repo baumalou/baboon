@@ -13,9 +13,9 @@ import (
 	"git.workshop21.ch/workshop21/ba/operator/model"
 )
 
-func getGrafanaResultset(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) (model.GrafanaResult, error) {
+func getGrafanaResultset(config *configuration.Config, endpoint string, timeStampTo, secondsInPast int) (model.GrafanaResult, error) {
 	result := model.GrafanaResult{}
-	startTime := -time.Duration(hoursInPast) * time.Second
+	startTime := -time.Duration(secondsInPast) * time.Second
 	start := int(time.Now().Add(startTime).Unix())
 	url := config.MonitoringHost + endpoint + "&start=" + strconv.Itoa(start) + "&end=" + strconv.Itoa(timeStampTo) + "&step=" + config.SamplingStepSize
 	logging.WithIDFields("PERF-OP-2").Debug(url)
