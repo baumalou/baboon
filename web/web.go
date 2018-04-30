@@ -73,7 +73,7 @@ func RunSmall(w http.ResponseWriter, r *http.Request) {
 	} else if !monitoring.VerifyClusterStatus() {
 		w.Write([]byte("cluster not ready to run fio"))
 	} else {
-		w.Write([]byte("wrong command to run fio!! command:" + params["size"] + " \rpossible commands: small, medium, large"))
+		w.Write([]byte("wrong command to run fio!! command:" + params["component"] + " \rpossible commands: all, none, osd, mon"))
 	}
 
 }
