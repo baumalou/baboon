@@ -110,7 +110,7 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		datasets = map[string]queue.Dataset{}
+		datasets := map[string]queue.Dataset{}
 		monitoring.FillDataset(&datasets, config)
 
 		for _, endpoint := range config.Endpoints {

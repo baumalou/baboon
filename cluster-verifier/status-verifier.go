@@ -37,9 +37,9 @@ func StatValuesToString(struc StatValues) string {
 		return struc.name + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus)
 	}
 }
-func StatValuesArrayToString(struc []StatValues) string{
+func StatValuesArrayToString(struc []StatValues) string {
 	ret := ""
-	for i := 0, i<len(struc); i++{
+	for i := 0; i < len(struc); i++ {
 		ret += StatValuesToString(struc[i]) + "/n"
 	}
 	return ret
