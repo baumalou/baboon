@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"git.workshop21.ch/go/abraxas/logging"
+	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
+	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 	stats "git.workshop21.ch/workshop21/ba/operator/statistics"
 	"git.workshop21.ch/workshop21/ba/operator/util"
 )
@@ -16,6 +18,15 @@ const (
 	DEGRADED
 	ERROR
 )
+
+var config *configuration.Config
+
+func getConfig() (*configuration.Config, error) {
+	if config == nil {
+		return configuration.ReadConfig()
+	}
+	return config, nil
+}
 
 // VerifyClusterStatus func cluster
 func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, error) {
@@ -65,6 +76,18 @@ func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, error) {
 
 // GetClusterStatusLastNSeconds prints the cluster status over the last n seconds from time.Now() on.
 func GetClusterStatusLastNSeconds(seconds int) (string, error) {
+	cfg, err := getConfig()
+	if err != nil {
+		logging.WithError("BA-OPERATOR-VERIFIER-04", err)
+	}
+
+	for _, endpoint := range config.Endpoints {
+		monQueue := queue.NewMetricQueue()
+		data, err := monitoring.MonitorRoutine(cfg, endpoint, time.Now().Unix(), seconds)
+
+		monQueue.InsertMonitoringTupelInQueue(data)
+		(*datasets)[endpoint.Name] = queue.Dataset{Queue: monQueue, Name: endpoint.Name}
+	}
 	return "not yet implemented", nil
 }
 
