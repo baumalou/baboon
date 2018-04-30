@@ -115,7 +115,7 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 
 		wg.Add(len(datasets))
 		monitoring.FillDataset(&datasets, config)
-		go getDataForSecs(&datasets, seconds)
+		go getDataForSecs(datasets, seconds)
 		wg.Wait()
 
 		_, _, data, err := verifier.VerifyClusterStatus(datasets)
@@ -133,10 +133,10 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getDataForSecs(datasets *map[string]queue.Dataset, secs int) {
+func getDataForSecs(datasets map[string]queue.Dataset, secs int) {
 	for _, endpoint := range config.Endpoints {
 		now := int(time.Now().Unix())
-		monitoring.MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, seconds)
+		monitoring.MonitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, secs)
 	}
 	defer wg.Done()
 }
