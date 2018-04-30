@@ -165,7 +165,7 @@ func VerfiyInfrastructureStatus(struc *[]StatValues, dataset map[string]queue.Da
 	}
 
 	daysRemainingCap := predictDaysToCapacitiyLimit(dataset["Av_capacity"].Queue.Dataset)
-	logging.WithID("BA-OPERATOR-VERIFIER-15").Info("Predicted Day until Memory: " + statusToStr(daysRemainingCap))
+	logging.WithID("BA-OPERATOR-VERIFIER-15").Info("Predicted Day until capacity limit is reached: " + statusToStr(daysRemainingCap))
 
 	if red >= 1 {
 		return ERROR, err
@@ -457,7 +457,7 @@ func verifyCapUsage(queue *queue.MetricQueue, length int) (float64, int, error) 
 
 	if result > 80 {
 		return result, ERROR, nil
-	} else if result >= 10 && result <= 80 {
+	} else if result >= 50 && result <= 80 {
 		return result, DEGRADED, nil
 	} else {
 		return result, HEALTHY, nil
