@@ -2,6 +2,7 @@ package monitoring
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -113,15 +114,24 @@ func FillDataset(datasets *map[string]queue.Dataset, config *configuration.Confi
 	}
 }
 
-func getQuantiles(dataset []queue.MetricTupel, config *configuration.Config) {
+// GetQuantiles: Public Call for getQuantiles using a dataset
+func GetQuantiles(dataset []queue.MetricTupel, config *configuration.Config) string {
+	return getQuantiles(dataset, config)
+}
+func getQuantiles(dataset []queue.MetricTupel, config *configuration.Config) string {
+	var quantileString string
 	q := quantile.NewTargeted(0.01, 0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95, 0.99)
 	for _, tupel := range dataset {
 		q.Insert(tupel.Value)
 	}
+
 	for _, percentile := range config.Percentiles {
-		logging.WithID("BA-OPERATOR-QUANTILE-001").Println(percentile, q.Query(percentile))
+		quantileString = quantileString + fmt.Sprint(percentile, q.Query(percentile), "\n")
+
 	}
-	logging.WithID("BA-OPERATOR-QUANTILE-COUNT").Println("count:", q.Count())
+	quantileString = quantileString + fmt.Sprint("count:", q.Count())
+	logging.WithID("BA-OPERATOR-QUANTILE-001").Println(quantileString)
+	return quantileString
 }
 
 func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) []queue.MetricTupel {

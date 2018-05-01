@@ -100,6 +100,7 @@ func PrintQueue(w http.ResponseWriter, r *http.Request) {
 
 func GetClusterState(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
+	var state string
 	if govalidator.IsInt(params["time"]) {
 		seconds, err := strconv.Atoi(params["time"])
 		if err != nil {
@@ -121,8 +122,11 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 		wg.Wait()
 
 		_, _, data, err := verifier.VerifyClusterStatus(datasets)
-		state := verifier.StatValuesArrayToString(data)
-
+		state = verifier.StatValuesArrayToString(data)
+		for _, endpoint := range config.Endpoints {
+			quantiles := monitoring.GetQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
+			state = state + "\r" + endpoint.Name + "\r" + quantiles
+		}
 		if err != nil {
 			w.Write([]byte("could not get status of cluster"))
 			return

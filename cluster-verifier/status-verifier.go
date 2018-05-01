@@ -13,28 +13,28 @@ import (
 )
 
 type StatValues struct {
-	name        string
-	value       float64
-	valueStatus int
-	devValue    float64
-	devStatus   int
+	Name        string
+	Value       float64
+	ValueStatus int
+	DevValue    float64
+	DevStatus   int
 }
 
 func getStatValues(name string, value float64, valueStatus int, devValue float64, devStatus int) StatValues {
 	data := StatValues{}
-	data.name = name
-	data.value = value
-	data.valueStatus = valueStatus
-	data.devValue = devValue
-	data.devStatus = devStatus
+	data.Name = name
+	data.Value = value
+	data.ValueStatus = valueStatus
+	data.DevValue = devValue
+	data.DevStatus = devStatus
 	return data
 }
 
 func StatValuesToString(struc StatValues) string {
-	if struc.devValue != 0.00 {
-		return struc.name + ": " + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus) + " " + util.FloatToStr(struc.devValue) + " " + statusToStr(struc.devStatus)
+	if struc.DevValue != 0.00 {
+		return struc.Name + ": " + util.FloatToStr(struc.Value) + " " + statusToStr(struc.ValueStatus) + " " + util.FloatToStr(struc.DevValue) + " " + statusToStr(struc.DevStatus)
 	} else {
-		return struc.name + ": " + util.FloatToStr(struc.value) + " " + statusToStr(struc.valueStatus)
+		return struc.Name + ": " + util.FloatToStr(struc.Value) + " " + statusToStr(struc.ValueStatus)
 	}
 }
 func StatValuesArrayToString(struc []StatValues) string {
