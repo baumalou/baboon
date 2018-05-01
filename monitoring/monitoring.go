@@ -2,7 +2,6 @@ package monitoring
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -11,7 +10,7 @@ import (
 	verifier "git.workshop21.ch/workshop21/ba/operator/cluster-verifier"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
-	"github.com/bmizerany/perks/quantile"
+	"git.workshop21.ch/workshop21/ba/operator/statistics"
 )
 
 var datasets map[string]queue.Dataset
@@ -42,7 +41,7 @@ func MonitorCluster(config *configuration.Config) {
 	FillDataset(&datasets, config)
 	for _, endpoint := range config.Endpoints {
 		logging.WithID("BA-OPERATOR-MONITOR-" + endpoint.Name).Println("generating quantiles")
-		getQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
+		statistics.GetQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
 	for {
 		wg.Add(len(datasets))
@@ -112,26 +111,6 @@ func FillDataset(datasets *map[string]queue.Dataset, config *configuration.Confi
 
 		time.Sleep(100 * time.Millisecond)
 	}
-}
-
-// GetQuantiles: Public Call for getQuantiles using a dataset
-func GetQuantiles(dataset []queue.MetricTupel, config *configuration.Config) string {
-	return getQuantiles(dataset, config)
-}
-func getQuantiles(dataset []queue.MetricTupel, config *configuration.Config) string {
-	var quantileString string
-	q := quantile.NewTargeted(0.01, 0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95, 0.99)
-	for _, tupel := range dataset {
-		q.Insert(tupel.Value)
-	}
-
-	for _, percentile := range config.Percentiles {
-		quantileString = quantileString + fmt.Sprint(percentile, q.Query(percentile), "\n")
-
-	}
-	quantileString = quantileString + fmt.Sprint("count:", q.Count())
-	logging.WithID("BA-OPERATOR-QUANTILE-001").Println(quantileString)
-	return quantileString
 }
 
 func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) []queue.MetricTupel {

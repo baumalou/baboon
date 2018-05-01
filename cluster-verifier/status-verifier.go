@@ -1,6 +1,7 @@
 package verifier
 
 import (
+	"fmt"
 	"strconv"
 
 	"time"
@@ -93,6 +94,12 @@ func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, []StatValu
 	down, downStatus, err := verifyOSDDown(dataset["OSD_UP"].Queue, dataset["OSDInQuorum"].Queue, length)
 	data[6] = getStatValues("down", down, downStatus, 0.00, 0)
 	logging.WithID("BA-OPERATOR-VERIFIER-17").Info("Down: " + util.FloatToStr(down) + " " + statusToStr(downStatus))
+
+	// tpRead, tpReadStatus, tpReadDev, tpWarning, err := verifyTPRead(dataset["TPread"].Queue, length)
+	// data[7] = getStatValues("throughput read", tpRead, tpReadStatus, tpReadDev, tpWarning)
+
+	// tpWrite, tpWriteStatus, tpWriteDev, tpWarning, err := verifyTPWrite(dataset["TPread"].Queue, length)
+	// data[10] = getStatValues("throughput write", tpWrite, tpWriteStatus, tpWriteDev, tpWarning)
 
 	infraStatus, err := VerfiyInfrastructureStatus(&data, dataset, length)
 
@@ -238,6 +245,72 @@ func verifyMonitorCounts(queue *queue.MetricQueue, length int) (float64, int, er
 	} else {
 		return min, HEALTHY, nil
 	}
+}
+
+func verifyTPRead(queue *queue.MetricQueue, length int) (float64, int, float64, int, error) {
+	commit := queue.GetNNewestTupel(length)
+	if len(commit) == 0 {
+		return 0, HEALTHY, 0, HEALTHY, nil
+	}
+	mean := stats.Mean(commit, length)
+	max := stats.Max(commit, length)
+	_, perc := stats.GetQuantiles(commit, config)
+	fmt.Println(commit, mean, max, perc)
+
+	deviation := stats.Deviation(commit, length)
+	deviation += mean
+
+	status := HEALTHY
+	devStatus := HEALTHY
+	limitYellow := 10.00
+	limitRed := 50.00
+
+	if deviation > limitRed {
+		devStatus = ERROR
+	} else if deviation >= limitYellow && deviation <= limitRed {
+		devStatus = DEGRADED
+	}
+
+	if perc[0.90] > limitRed {
+		status = ERROR
+	} else if perc[0.90] >= limitYellow && perc[0.90] <= limitRed {
+		status = DEGRADED
+	}
+	return perc[0.90], status, deviation, devStatus, nil
+
+}
+
+func verifyTPWrite(queue *queue.MetricQueue, length int) (float64, int, float64, int, error) {
+	commit := queue.GetNNewestTupel(length)
+	if len(commit) == 0 {
+		return 0, HEALTHY, 0, HEALTHY, nil
+	}
+	mean := stats.Mean(commit, length)
+	max := stats.Max(commit, length)
+	_, perc := stats.GetQuantiles(commit, config)
+	fmt.Println(commit, mean, max, perc)
+
+	deviation := stats.Deviation(commit, length)
+	deviation += mean
+
+	status := HEALTHY
+	devStatus := HEALTHY
+	limitYellow := 10.00
+	limitRed := 50.00
+
+	if deviation > limitRed {
+		devStatus = ERROR
+	} else if deviation >= limitYellow && deviation <= limitRed {
+		devStatus = DEGRADED
+	}
+
+	if perc[0.90] > limitRed {
+		status = ERROR
+	} else if perc[0.90] >= limitYellow && perc[0.90] <= limitRed {
+		status = DEGRADED
+	}
+	return perc[0.90], status, deviation, devStatus, nil
+
 }
 
 func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (float64, int, float64, int, error) {

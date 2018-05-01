@@ -18,7 +18,7 @@ RookNamespace = "rook"
 WebPort   =            "80"
 WebPath  =             "/app/pictures"
 
-Percentiles = [0.01,0.10,0.25,0.50,0.75,0.80,0.90,0.95,0.99]
+Percentiles = [0.01,0.10,0.25,0.50,0.75,0.80,0.90,0.95,0.99, 0.999]
 
 [Endpoints]
 [Endpoints.Endpoint1]
