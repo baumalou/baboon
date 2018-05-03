@@ -108,8 +108,6 @@ func FillDataset(datasets *map[string]queue.Dataset, config *configuration.Confi
 		// }
 		monQueue.InsertMonitoringTupelInQueue(data)
 		(*datasets)[endpoint.Name] = queue.Dataset{Queue: monQueue, Name: endpoint.Name}
-
-		time.Sleep(100 * time.Millisecond)
 	}
 }
 
