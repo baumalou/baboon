@@ -43,6 +43,7 @@ func MonitorCluster(config *configuration.Config) {
 		logging.WithID("BA-OPERATOR-MONITOR-" + endpoint.Name).Println("generating quantiles")
 		statistics.GetQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
+	go VerifyClusterStatusRoutine()
 	for {
 		wg.Add(len(datasets))
 		for _, endpoint := range config.Endpoints {
@@ -50,31 +51,40 @@ func MonitorCluster(config *configuration.Config) {
 			go monitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, config.SampleInterval)
 		}
 		wg.Wait()
-		verifier.VerifyClusterStatus(datasets)
+		//verifier.VerifyClusterStatus(datasets)
+		// why call this function when another already defined function exists in local package?
+		//VerifyClusterStatus()
 		time.Sleep(10 * time.Second)
 	}
 }
 
+func VerifyClusterStatusRoutine() {
+	for {
+		VerifyClusterStatus()
+		time.Sleep(1 * time.Second)
+	}
+}
 func VerifyClusterStatus() bool {
+
 	status, warning, _, err := verifier.VerifyClusterStatus(datasets)
 	if err != nil {
 		logging.WithError("BA-OPERATOR-MONITOR-003", err).Fatalln("not able to determine Cluster state", err)
 	}
 	switch warning {
 	case verifier.DEGRADED:
-		logging.WithID("BA-OPERATOR-MONITOR-005").Println("Cluster is nearly Degraded: ", warning)
+		logging.WithID("BA-OPERATOR-MONITOR-WARNING-DEGRADED-005").Println("Cluster is nearly Degraded: ", warning)
 	case verifier.ERROR:
-		logging.WithID("BA-OPERATOR-MONITOR-005").Println("Cluster is nearly in Error State: ", warning)
+		logging.WithID("BA-OPERATOR-MONITOR-WARNING-ERROR-005").Println("Cluster is nearly in Error State: ", warning)
 	}
 	switch status {
 	case verifier.HEALTHY:
-		logging.WithID("BA-OPERATOR-MONITOR-004").Println("Cluster is Healthy: ", status)
+		logging.WithID("BA-OPERATOR-MONITOR-HEALTHY-004").Println("Cluster is Healthy: ", status)
 		return true
 	case verifier.DEGRADED:
-		logging.WithID("BA-OPERATOR-MONITOR-004").Println("Cluster is Degraded: ", status)
+		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Println("Cluster is Degraded: ", status)
 		return false
 	case verifier.ERROR:
-		logging.WithID("BA-OPERATOR-MONITOR-004").Println("Cluster is in Error State!!! : ", status)
+		logging.WithID("BA-OPERATOR-MONITOR-ERROR-004").Println("Cluster is in Error State!!! : ", status)
 		return false
 	}
 	return false
@@ -97,18 +107,20 @@ func MonitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, end
 }
 
 func FillDataset(datasets *map[string]queue.Dataset, config *configuration.Config) {
-
+	wg.Add(len(config.Endpoints))
 	for _, endpoint := range config.Endpoints {
-		now := int(time.Now().Unix())
-		data := getMonitoringData(config, endpoint.Path, now, 3600)
-		monQueue := queue.NewMetricQueue()
-		//queue := lang.NewQueue()
-		// for timestamp, val := range data {
-		// 	queue.Push(queue.MetricTupel{Timestamp: timestamp, Value: val})
-		// }
-		monQueue.InsertMonitoringTupelInQueue(data)
-		(*datasets)[endpoint.Name] = queue.Dataset{Queue: monQueue, Name: endpoint.Name}
+		go createEndpointDataset(datasets, config, endpoint)
 	}
+	wg.Wait()
+}
+
+func createEndpointDataset(datasets *map[string]queue.Dataset, config *configuration.Config, endpoint configuration.Endpoint) {
+	defer wg.Done()
+	now := int(time.Now().Unix())
+	data := getMonitoringData(config, endpoint.Path, now, 3600)
+	monQueue := queue.NewMetricQueue()
+	monQueue.InsertMonitoringTupelInQueue(data)
+	(*datasets)[endpoint.Name] = queue.Dataset{Queue: monQueue, Name: endpoint.Name}
 }
 
 func getMonitoringData(config *configuration.Config, endpoint string, timeStampTo, hoursInPast int) []queue.MetricTupel {

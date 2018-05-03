@@ -1,6 +1,7 @@
 package statistics
 
 import (
+	"errors"
 	"fmt"
 
 	"git.workshop21.ch/go/abraxas/logging"
@@ -29,4 +30,16 @@ func getQuantiles(dataset []queue.MetricTupel, config *configuration.Config) (st
 	quantileString = quantileString + fmt.Sprint("count:", q.Count())
 	logging.WithID("BA-OPERATOR-QUANTILE-001").Println(quantileString)
 	return quantileString, quantileMap
+}
+
+// GetNPercentQuantile returns the given percentile (float64) from an array of MetricTupel
+func GetNPercentQuantile(dataset []queue.MetricTupel, percentile float64) (float64, error) {
+	q := quantile.NewTargeted(percentile)
+	if len(dataset) < 1 {
+		return 0, errors.New("dataset contains no Metric Tupel!\r")
+	}
+	for _, tupel := range dataset {
+		q.Insert(tupel.Value)
+	}
+	return q.Query(percentile), nil
 }

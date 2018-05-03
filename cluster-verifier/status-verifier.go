@@ -55,15 +55,21 @@ const (
 var config *configuration.Config
 
 func getConfig() (*configuration.Config, error) {
+	var err error
 	if config == nil {
-		return configuration.ReadConfig(config)
+		config, err = configuration.ReadConfig(config)
+		return config, err
 	}
 	return config, nil
 }
 
 // VerifyClusterStatus func cluster
 func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, []StatValues, error) {
-	length := 20
+	config, err := getConfig()
+	if err != nil {
+		return 0, 0, nil, err
+	}
+	length := config.LenghtRecordsToVerify
 	logging.WithID("BA-OPERATOR-VERIFIER-01").Info("verifier started")
 
 	data := make([]StatValues, 12)
@@ -210,21 +216,21 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (
 	result := stats.Mean(data, length)
 	deviation := stats.Deviation(data, length)
 	deviation += result
-
+	perc75, _ := stats.GetNPercentQuantile(data, 0.75) //Example how to use percentile
 	status := HEALTHY
 	devStatus := HEALTHY
 	limitYellow := 6000.00
 	limitRed := 14000.00
 
-	if deviation > limitRed {
+	if deviation > limitRed || perc75 > limitRed {
 		status = ERROR
 	} else if deviation >= limitYellow && deviation <= limitRed {
 		status = DEGRADED
 	}
 
-	if result > limitRed {
+	if result > limitRed || perc75 > limitRed {
 		status = ERROR
-	} else if result >= limitYellow && result <= limitRed {
+	} else if (result >= limitYellow && result <= limitRed) || perc75 > limitRed {
 		status = DEGRADED
 	}
 	return result, status, deviation, devStatus, nil

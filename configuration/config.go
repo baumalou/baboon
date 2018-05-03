@@ -33,6 +33,7 @@ type Config struct {
 	RookOSDSelector       string
 	RookMonSelector       string
 	RookNamespace         string
+	LenghtRecordsToVerify int
 }
 type Endpoint struct {
 	Name string
