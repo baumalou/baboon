@@ -32,6 +32,7 @@ func GetKubeClient(kc *KubeClient) (*KubeClient, error) {
 	return kc, nil
 }
 
+// CreateKubeClient by reading current cluster
 func CreateKubeClient(config *configuration.Config, namespace string) (*KubeClient, error) {
 	kubeclient, err := CreateKubeClientWithoutSvcConfig(namespace)
 	if err != nil {
@@ -49,8 +50,17 @@ func (kc *KubeClient) KillOnePodOf(selector string) error {
 	}
 	oldestPod := getOldestPod(pods.Items)
 	logging.WithID("BA-OPERATOR-PODKILLER-001").Info("Name: ", oldestPod.Name)
+	go killPod(oldestPod, kc)
+	return nil
+}
 
-	return kc.Clientset.CoreV1().Pods(kc.SvcConfig.RookNamespace).Delete(oldestPod.Name, &metav1.DeleteOptions{})
+func killPod(pod *v1.Pod, kc *KubeClient) {
+	time.Sleep(10 * time.Second)
+	err := kc.Clientset.CoreV1().Pods(kc.SvcConfig.RookNamespace).Delete(pod.Name, &metav1.DeleteOptions{})
+	if err != nil {
+		logging.WithError("BA-OPERATOR-PODKILLER-002", err).Error("Pod could not be killed.")
+
+	}
 }
 
 func getOldestPod(pods []v1.Pod) *v1.Pod {

@@ -1,7 +1,11 @@
 package monitoring
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -72,19 +76,28 @@ func VerifyClusterStatus() bool {
 	}
 	switch warning {
 	case verifier.DEGRADED:
-		logging.WithID("BA-OPERATOR-MONITOR-WARNING-DEGRADED-005").Println("Cluster is nearly Degraded: ", warning)
+		notification := fmt.Sprintln("Cluster is nearly Degraded: ", warning)
+		SendNOtification(notification)
+		logging.WithID("BA-OPERATOR-MONITOR-WARNING-DEGRADED-005").Println(notification)
 	case verifier.ERROR:
-		logging.WithID("BA-OPERATOR-MONITOR-WARNING-ERROR-005").Println("Cluster is nearly in Error State: ", warning)
+		notification := fmt.Sprintln("Cluster is nearly in Error State: ", warning)
+		SendNOtification(notification)
+		logging.WithID("BA-OPERATOR-MONITOR-WARNING-ERROR-005").Println(notification)
+
 	}
 	switch status {
 	case verifier.HEALTHY:
 		logging.WithID("BA-OPERATOR-MONITOR-HEALTHY-004").Println("Cluster is Healthy: ", status)
 		return true
 	case verifier.DEGRADED:
-		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Println("Cluster is Degraded: ", status)
+		notification := fmt.Sprintln("Cluster is Degraded: ", status)
+		SendNOtification(notification)
+		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Println(notification)
 		return false
 	case verifier.ERROR:
-		logging.WithID("BA-OPERATOR-MONITOR-ERROR-004").Println("Cluster is in Error State!!! : ", status)
+		notification := fmt.Sprintln("Cluster is in Error State!!! : ", status)
+		SendNOtification(notification)
+		logging.WithID("BA-OPERATOR-MONITOR-ERROR-004").Println(notification)
 		return false
 	}
 	return false
@@ -156,5 +169,31 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 	}
 
 	return data
+
+}
+
+func SendNOtification(notification string) {
+
+	url := "https://chat.workshop21.ch/hooks/5zhbybp88jgwp88zanu9j4751w"
+	fmt.Println("URL:>", url)
+
+	var jsonStr = []byte(`
+		{
+			"text": "` + notification + `"
+		}`)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("response Status:", resp.Status)
+	fmt.Println("response Headers:", resp.Header)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(body))
 
 }

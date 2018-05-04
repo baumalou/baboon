@@ -16,6 +16,7 @@ func init() {
 }
 
 func main() {
+
 	logging.WithID("PERF-OP-000").Info("operator started")
 	config, err := configuration.ReadConfig(nil)
 	if err != nil {
