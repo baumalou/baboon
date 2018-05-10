@@ -35,9 +35,9 @@ Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_mon_quorum_count"
 [Endpoints.Endpoint4]
 Name="Av_capacity"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_cluster_total_used_bytes%2Fceph_cluster_total_bytes"
-# [Endpoints.Endpoint5]
-# Name="AvMonLat"
-# Path="/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_monitor_latency_seconds)"
+[Endpoints.Endpoint5]
+Name="PG_Undersized"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_pg_undersized"
 [Endpoints.Endpoint6]
 Name="AvOSDappllat"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=avg(ceph_osd_apply_latency_ms)"
@@ -66,18 +66,18 @@ Path="/api/datasources/proxy/2/api/v1/query_range?query=((sum(node_memory_MemTot
 [Endpoints.Endpoint14]
 Name="networkTransmit"
 Path="/api/datasources/proxy/2/api/v1/query_range?query=(sum(rate(container_network_transmit_bytes_total%7Bnamespace%3D%22ingress-nginx%22%2Cpod_name%3D~%22prometheus-nginx-prometheus.*%22%7D%5B1m%5D))%20%2B%20sum(rate(container_network_receive_bytes_total%7Bnamespace%3D%22ingress-nginx%22%2Cpod_name%3D~%22prometheus-nginx-prometheus.*%22%7D%5B1m%5D)))%2F1250000000*100"
-#[Endpoints.Endpoint14]
-#Name="networkReceive"
-#Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(rate(container_network_receive_bytes_total%7Bnamespace%3D%22ingress-nginx%22%2Cpod_name%3D~%22prometheus-nginx-prometheus.*%22%7D%5B1m%5D))"
-#[Endpoints.Endpoint15]
-#Name="networkSend"
-#Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(rate(container_network_transmit_bytes_total%7Bnamespace%3D%22ingress-nginx%22%2Cpod_name%3D~%22prometheus-nginx-prometheus.*%22%7D%5B1m%5D))%20"
+[Endpoints.Endpoint15]
+Name="PG_Stale"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_pg_stale"
 [Endpoints.Endpoint16]
+Name="PG_Degraded"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_pg_degraded"
+[Endpoints.Endpoint17]
 Name="PercUsedCPU"
 Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(100%20-%20(avg%20by%20(instance)%20(rate(node_cpu%7Bjob%3D%22node-exporter%22%2Cmode%3D%22idle%22%7D%5B1m%5D))%20*%20100))%20%2F%20count(node_cpu%7Bjob%3D%22node-exporter%22%2Cmode%3D%22idle%22%7D)"
-[Endpoints.Endpoint17]
+[Endpoints.Endpoint18]
 Name="OSD_UP"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_up)"
-[Endpoints.Endpoint18]
+[Endpoints.Endpoint19]
 Name="CPUCoresUsed"
 Path="/api/datasources/proxy/2/api/v1/query_range?query=max(sum(kube_pod_container_resource_requests_cpu_cores)%20by%20(instance))"

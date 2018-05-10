@@ -14,7 +14,9 @@ import (
 	verifier "git.workshop21.ch/workshop21/ba/operator/cluster-verifier"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
+	"git.workshop21.ch/workshop21/ba/operator/model"
 	"git.workshop21.ch/workshop21/ba/operator/statistics"
+	"git.workshop21.ch/workshop21/ba/operator/util"
 )
 
 var datasets map[string]queue.Dataset
@@ -70,33 +72,33 @@ func VerifyClusterStatusRoutine() {
 }
 func VerifyClusterStatus() bool {
 
-	status, warning, _, err := verifier.VerifyClusterStatus(datasets)
+	status, warning, vals, err := verifier.VerifyClusterStatus(datasets)
 	if err != nil {
 		logging.WithError("BA-OPERATOR-MONITOR-003", err).Fatalln("not able to determine Cluster state", err)
 	}
 	switch warning {
-	case verifier.DEGRADED:
+	case model.DEGRADED:
 		notification := fmt.Sprintln("Cluster is nearly Degraded: ", warning)
-		SendNOtification(notification)
+		SendNOtification(util.StatValuesArrayToString(vals) + notification)
 		logging.WithID("BA-OPERATOR-MONITOR-WARNING-DEGRADED-005").Println(notification)
-	case verifier.ERROR:
+	case model.ERROR:
 		notification := fmt.Sprintln("Cluster is nearly in Error State: ", warning)
-		SendNOtification(notification)
+		SendNOtification(util.StatValuesArrayToString(vals) + notification)
 		logging.WithID("BA-OPERATOR-MONITOR-WARNING-ERROR-005").Println(notification)
 
 	}
 	switch status {
-	case verifier.HEALTHY:
+	case model.HEALTHY:
 		logging.WithID("BA-OPERATOR-MONITOR-HEALTHY-004").Println("Cluster is Healthy: ", status)
 		return true
-	case verifier.DEGRADED:
+	case model.DEGRADED:
 		notification := fmt.Sprintln("Cluster is Degraded: ", status)
-		SendNOtification(notification)
-		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Println(notification)
+		SendNOtification(util.StatValuesArrayToString(vals) + notification)
+		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Println(notification, util.StatValuesArrayToString(vals), vals)
 		return false
-	case verifier.ERROR:
+	case model.ERROR:
 		notification := fmt.Sprintln("Cluster is in Error State!!! : ", status)
-		SendNOtification(notification)
+		SendNOtification(util.StatValuesArrayToString(vals) + notification)
 		logging.WithID("BA-OPERATOR-MONITOR-ERROR-004").Println(notification)
 		return false
 	}

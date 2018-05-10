@@ -211,3 +211,18 @@ func verifyCapUsage(queue *queue.MetricQueue, length int) (model.StatValues, err
 	}
 	return util.GetStatValuesValue("capacity", result, status), nil
 }
+
+func verifyPG(queue *queue.MetricQueue, length int, metric string) (model.StatValues, error) {
+	usage := queue.GetNNewestTupel(length)
+	if len(usage) == 0 {
+		return util.GetStatValuesEmpty(metric), nil
+	}
+	result := stats.Max(usage, length)
+	status := model.HEALTHY
+	if result > 10 {
+		status = model.ERROR
+	} else if result >= 1 {
+		status = model.DEGRADED
+	}
+	return util.GetStatValuesValue("capacity", result, status), nil
+}

@@ -67,35 +67,48 @@ func VerifyClusterStatus(dataset map[string]queue.Dataset) (int, int, []model.St
 // VerifyCephStatus analyse ceph status
 func VerifyCephStatus(struc *[]model.StatValues, dataset map[string]queue.Dataset, length int) error {
 
-	cephdata := *struc
-
 	iops, err := verifyIOPS(dataset["IOPS_write"].Queue, dataset["IOPS_read"].Queue, length)
-	cephdata = append(cephdata, iops)
+	*struc = append(*struc, iops)
 	logging.WithID("BA-OPERATOR-VERIFIER-08").Info(util.StatValuesToString(iops))
 
 	mon, err := verifyMonitorCounts(dataset["Mon_quorum"].Queue, length)
-	cephdata = append(cephdata, mon)
+	*struc = append(*struc, mon)
 	logging.WithID("BA-OPERATOR-VERIFIER-09").Info(util.StatValuesToString(mon))
 
 	commit, err := verifyOSDCommitLatency(dataset["AvOSDcommlat"].Queue, length)
-	cephdata = append(cephdata, commit)
+	*struc = append(*struc, commit)
 	logging.WithID("BA-OPERATOR-VERIFIER-10").Info(util.StatValuesToString(commit))
 
 	apply, err := verifyOSDApplyLatency(dataset["AvOSDappllat"].Queue, length)
-	cephdata = append(cephdata, apply)
+	*struc = append(*struc, apply)
 	logging.WithID("BA-OPERATOR-VERIFIER-12").Info(util.StatValuesToString(apply))
 
 	health, err := verifyCephHealth(dataset["CEPH_health"].Queue, length)
-	cephdata = append(cephdata, health)
+	*struc = append(*struc, health)
 	logging.WithID("BA-OPERATOR-VERIFIER-12").Info(util.StatValuesToString(health))
 
 	orphan, err := verifyOSDOrphan(dataset["OSDInQuorum"].Queue, dataset["OSD_UP"].Queue, length)
-	cephdata = append(cephdata, orphan)
+	*struc = append(*struc, orphan)
 	logging.WithID("BA-OPERATOR-VERIFIER-13").Info(util.StatValuesToString(orphan))
 
 	down, err := verifyOSDDown(dataset["OSD_UP"].Queue, dataset["OSDInQuorum"].Queue, length)
-	cephdata = append(cephdata, down)
+	*struc = append(*struc, down)
 	logging.WithID("BA-OPERATOR-VERIFIER-17").Info(util.StatValuesToString(down))
+
+	stale, err := verifyPG(dataset["PG_Stale"].Queue, length, "PG_Stale")
+	*struc = append(*struc, stale)
+
+	logging.WithID("BA-OPERATOR-VERIFIER-18").Info(util.StatValuesToString(stale))
+
+	degraded, err := verifyPG(dataset["PG_Degraded"].Queue, length, "PG_Degraded")
+	*struc = append(*struc, degraded)
+
+	logging.WithID("BA-OPERATOR-VERIFIER-19").Info(util.StatValuesToString(degraded))
+
+	undersized, err := verifyPG(dataset["PG_Undersized"].Queue, length, "PG_Undersized")
+	*struc = append(*struc, undersized)
+
+	logging.WithID("BA-OPERATOR-VERIFIER-19").Info(util.StatValuesToString(undersized))
 
 	// tpRead, tpReadStatus, tpReadDev, tpWarning, err := verifyTPRead(dataset["TPread"].Queue, length)
 	// data[7] = GetStatValues("throughput read", tpRead, tpReadStatus, tpReadDev, tpWarning)
@@ -110,11 +123,10 @@ func VerifyCephStatus(struc *[]model.StatValues, dataset map[string]queue.Datase
 func VerfiyInfrastructureStatus(struc *[]model.StatValues, dataset map[string]queue.Dataset, length int) (int, error) {
 	yellow := 0
 	red := 0
-	values := *struc
 
 	cpu, err := verifyCPUUsage(dataset["PercUsedCPU"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-03").Info(util.StatValuesToString(cpu))
-	values = append(values, cpu)
+	*struc = append(*struc, cpu)
 	if cpu.ValueStatus == model.DEGRADED {
 		yellow += 3
 	} else if cpu.ValueStatus == model.ERROR {
@@ -123,7 +135,7 @@ func VerfiyInfrastructureStatus(struc *[]model.StatValues, dataset map[string]qu
 
 	cores, err := verifyCPUCoresUsage(dataset["CPUCoresUsed"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-04").Info(util.StatValuesToString(cores))
-	values = append(values, cores)
+	*struc = append(*struc, cores)
 	if cores.ValueStatus == model.DEGRADED {
 		yellow += 3
 	} else if cores.ValueStatus == model.ERROR {
@@ -132,7 +144,7 @@ func VerfiyInfrastructureStatus(struc *[]model.StatValues, dataset map[string]qu
 
 	memory, err := verifyMemUsage(dataset["UsePercOfMem"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-05").Info(util.StatValuesToString(memory))
-	values = append(values, memory)
+	*struc = append(*struc, memory)
 	if memory.ValueStatus == model.DEGRADED {
 		yellow += 3
 	} else if memory.ValueStatus == model.ERROR {
@@ -141,7 +153,7 @@ func VerfiyInfrastructureStatus(struc *[]model.StatValues, dataset map[string]qu
 
 	network, err := verifyNetworkUsage(dataset["networkTransmit"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-06").Info(util.StatValuesToString(network))
-	values = append(values, network)
+	*struc = append(*struc, network)
 	if network.ValueStatus == model.DEGRADED {
 		yellow += 2
 	} else if network.ValueStatus == model.ERROR {
@@ -150,7 +162,7 @@ func VerfiyInfrastructureStatus(struc *[]model.StatValues, dataset map[string]qu
 
 	capacity, err := verifyCapUsage(dataset["Av_capacity"].Queue, length)
 	logging.WithID("BA-OPERATOR-VERIFIER-07").Info(util.StatValuesToString(capacity))
-	values = append(values, capacity)
+	*struc = append(*struc, capacity)
 	if capacity.ValueStatus == model.DEGRADED {
 		yellow++
 	} else if capacity.ValueStatus == model.ERROR {
