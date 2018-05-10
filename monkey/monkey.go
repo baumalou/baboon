@@ -32,8 +32,10 @@ func DoTheMonkey() {
 			if err != nil {
 				logging.WithID("MONKEY-002").Error("\nnot able to kill a pod out of " + component + err.Error())
 			}
+		} else {
+			logging.WithID("MONKEY-003").Error("\nnot able to kill pod. Cluster is not ready!")
 		}
-		time.Sleep(time.Duration(random(1, 120)) * time.Minute)
+		time.Sleep(time.Duration(random(1, 10)) * time.Minute)
 
 	}
 

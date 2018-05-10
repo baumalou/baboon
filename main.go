@@ -7,6 +7,7 @@ import (
 	"git.workshop21.ch/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/monitoring"
+	"git.workshop21.ch/workshop21/ba/operator/monkey"
 	"git.workshop21.ch/workshop21/ba/operator/web"
 	"github.com/sirupsen/logrus"
 )
@@ -29,6 +30,7 @@ func main() {
 	//var keys []int
 	log.Println()
 	monitoring.MonitorCluster(config)
+	go monkey.DoTheMonkey()
 	/*
 		for _, v := range datasets {
 			keys = make([]int, 0, len(v))
