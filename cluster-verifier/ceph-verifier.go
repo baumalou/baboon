@@ -224,5 +224,5 @@ func verifyPG(queue *queue.MetricQueue, length int, metric string) (model.StatVa
 	} else if result >= 1 {
 		status = model.DEGRADED
 	}
-	return util.GetStatValuesValue("capacity", result, status), nil
+	return util.GetStatValuesValue(metric, result, status), nil
 }
