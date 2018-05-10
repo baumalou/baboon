@@ -48,12 +48,18 @@ func GetStatValuesEmpty(name string) model.StatValues {
 }
 
 func StatValuesToString(struc model.StatValues) string {
-	if struc.DevValue != 0.00 {
-		return struc.Name + ": " + FloatToStr(struc.Value) + " " + StatusToStr(struc.ValueStatus) + " " + FloatToStr(struc.DevValue) + " " + StatusToStr(struc.DevStatus)
-	} else {
-		return struc.Name + ": " + FloatToStr(struc.Value) + " " + StatusToStr(struc.ValueStatus)
+	ret := struc.Name + ": " + FloatToStr(struc.Value) + " " + StatusToStr(struc.ValueStatus)
+
+	if struc.DevValue != math.NaN() {
+		ret = ret + " " + FloatToStr(struc.DevValue)
+		if struc.PercentileVal != math.NaN() {
+			ret = ret + " " + FloatToStr(struc.PercentileVal)
+		}
+		ret = ret + " " + StatusToStr(struc.DevStatus)
 	}
+	return ret
 }
+
 func StatValuesArrayToString(struc []model.StatValues) string {
 	ret := ""
 	for i := 0; i < len(struc); i++ {
