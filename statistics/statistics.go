@@ -49,3 +49,10 @@ func ForecastRegression(dataArray []queue.MetricTupel) (int, error) {
 	prediction, err := r.Predict([]float64{float64(80)})
 	return int(prediction), err
 }
+
+// 75% percentile
+func Percentile(dataArray []queue.MetricTupel, number int) float64 {
+	data := util.MappingToArray(dataArray, number)
+	perc, _ := stats.Percentile(data, 75)
+	return perc
+}

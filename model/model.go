@@ -17,3 +17,12 @@ type Data struct {
 	Timestamp int
 	Value     float64
 }
+
+type StatValues struct {
+	Name          string
+	Value         float64
+	ValueStatus   int
+	DevValue      float64
+	DevStatus     int
+	PercentileVal float64
+}
