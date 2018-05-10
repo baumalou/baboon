@@ -29,8 +29,9 @@ func main() {
 	time.Sleep(6 * time.Second)
 	//var keys []int
 	log.Println()
-	monitoring.MonitorCluster(config)
 	go monkey.DoTheMonkey()
+	monitoring.MonitorCluster(config)
+
 	/*
 		for _, v := range datasets {
 			keys = make([]int, 0, len(v))
