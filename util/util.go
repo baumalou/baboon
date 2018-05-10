@@ -20,6 +20,9 @@ func FloatToStr(fv float64) string {
 }
 
 func MappingToArray(dataArray []queue.MetricTupel, number int) stats.Float64Data {
+	if len(dataArray) < 1 {
+		return stats.Float64Data{}
+	}
 	data := make(stats.Float64Data, number)
 	for i := 0; i < number; i++ {
 		data[(number-1)-i] = dataArray[len(dataArray)-1-i].Value
@@ -50,7 +53,7 @@ func GetStatValuesEmpty(name string) model.StatValues {
 func StatValuesToString(struc model.StatValues) string {
 	ret := struc.Name + ": " + FloatToStr(struc.Value) + " " + StatusToStr(struc.ValueStatus)
 
-	if struc.DevValue != math.NaN() {
+	if math.IsNaN(struc.DevValue) {
 		ret = ret + " " + FloatToStr(struc.DevValue)
 		if struc.PercentileVal != math.NaN() {
 			ret = ret + " " + FloatToStr(struc.PercentileVal)

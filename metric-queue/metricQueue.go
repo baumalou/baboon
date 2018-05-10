@@ -72,10 +72,8 @@ func (mq *MetricQueue) GetNNewestTupel(n int) []MetricTupel {
 	if !sort.IsSorted(mq) {
 		sort.Sort(mq)
 	}
-	if length >= n {
-		for i := 0; i < n; i++ {
-			data[n-1-i] = mq.Dataset[length-1-i]
-		}
+	if length > n {
+		return mq.Dataset[length-n : length]
 	}
 	return data
 }

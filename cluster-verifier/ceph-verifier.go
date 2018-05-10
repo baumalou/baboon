@@ -22,7 +22,7 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (
 	result := stats.Mean(data, length)
 	deviation := stats.Deviation(data, length)
 	deviation += result
-	perc75, _ := stats.GetNPercentQuantile(data, 0.75) //Example how to use percentile
+	perc75, _ := stats.GetNPercentile(data, 0.75) //Example how to use percentile
 	status := model.HEALTHY
 	devStatus := model.HEALTHY
 	limitYellow := 6000.00
@@ -40,7 +40,7 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (
 		status = model.DEGRADED
 	}
 
-	return util.GetStatValuesDev("iops", result, status, deviation, devStatus), nil
+	return util.GetStatValuesAll("iops", result, status, deviation, devStatus, perc75), nil
 }
 
 func verifyMonitorCounts(queue *queue.MetricQueue, length int) (model.StatValues, error) {
@@ -87,7 +87,17 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (model.StatVal
 		status = model.DEGRADED
 	}
 
-	return util.GetStatValuesDev("commit", result, status, deviation, devStatus), nil
+	perc90, err := stats.GetNPercentile(commit, 0.90)
+	if err != nil {
+		return util.GetStatValuesDev("commit", result, status, deviation, devStatus), nil
+	}
+	if perc90 > limitRed {
+		status = model.ERROR
+	} else if perc90 >= limitYellow {
+		status = model.DEGRADED
+	}
+
+	return util.GetStatValuesAll("commit", result, status, deviation, devStatus, perc90), nil
 }
 
 func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (model.StatValues, error) {
@@ -116,7 +126,18 @@ func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (model.StatValu
 		status = model.DEGRADED
 	}
 
-	return util.GetStatValuesDev("apply", result, status, deviation, devStatus), nil
+	perc90, err := stats.GetNPercentile(apply, 0.90)
+	if err != nil {
+		return util.GetStatValuesDev("commit", result, status, deviation, devStatus), nil
+	}
+
+	if perc90 > limitRed {
+		status = model.ERROR
+	} else if perc90 >= limitYellow {
+		status = model.DEGRADED
+	}
+
+	return util.GetStatValuesAll("apply", result, status, deviation, devStatus, perc90), nil
 }
 
 func verifyCephHealth(queue *queue.MetricQueue, length int) (model.StatValues, error) {

@@ -16,14 +16,23 @@ func verifyCPUUsage(queue *queue.MetricQueue, length int) (model.StatValues, err
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
-	//deviation := stats.Deviation(usage, length)
+	deviation := stats.Deviation(usage, length)
 	status := model.HEALTHY
 	if result > 85 {
 		status = model.ERROR
 	} else if result >= 50 && result <= 85 {
 		status = model.DEGRADED
 	}
-	return util.GetStatValuesValue("cpu", result, status), nil
+	perc90, err := stats.GetNPercentile(usage, 90)
+	if err != nil {
+		return util.GetStatValuesValue("cpu", result, status), nil
+	}
+	if perc90 > 85 {
+		status = model.ERROR
+	} else if perc90 >= 50 {
+		status = model.DEGRADED
+	}
+	return util.GetStatValuesAll("cpu", result, status, deviation, status, perc90), nil
 }
 
 func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (model.StatValues, error) {
@@ -35,14 +44,23 @@ func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (model.StatValues
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
 	//min := stats.Min(usage, length)
-	//deviation := stats.Deviation(usage, length)
+	deviation := stats.Deviation(usage, length)
 	status := model.HEALTHY
 	if result > 50 {
 		status = model.ERROR
 	} else if result >= 30 && result <= 50 {
 		status = model.DEGRADED
 	}
-	return util.GetStatValuesValue("cores", result, status), nil
+	perc90, err := stats.GetNPercentile(usage, 90)
+	if err != nil {
+		return util.GetStatValuesValue("cpu", result, status), nil
+	}
+	if perc90 > 50 {
+		status = model.ERROR
+	} else if perc90 >= 30 {
+		status = model.DEGRADED
+	}
+	return util.GetStatValuesAll("cores", result, status, deviation, status, perc90), nil
 }
 
 func verifyMemUsage(queue *queue.MetricQueue, length int) (model.StatValues, error) {
@@ -58,7 +76,7 @@ func verifyMemUsage(queue *queue.MetricQueue, length int) (model.StatValues, err
 	status := model.HEALTHY
 	if result > 80 {
 		status = model.ERROR
-	} else if result >= 50 && result <= 80 {
+	} else if result >= 60 && result <= 80 {
 		status = model.DEGRADED
 	}
 	return util.GetStatValuesValue("memory", result, status), nil

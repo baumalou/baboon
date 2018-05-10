@@ -33,7 +33,10 @@ func getQuantiles(dataset []queue.MetricTupel, config *configuration.Config) (st
 }
 
 // GetNPercentQuantile returns the given percentile (float64) from an array of MetricTupel
-func GetNPercentQuantile(dataset []queue.MetricTupel, percentile float64) (float64, error) {
+func GetNPercentile(dataset []queue.MetricTupel, percentile float64) (float64, error) {
+	if percentile > 1 {
+		percentile = percentile / 100
+	}
 	q := quantile.NewTargeted(percentile)
 	if len(dataset) < 1 {
 		return 0, errors.New("dataset contains no Metric Tupel!\r")

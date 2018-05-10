@@ -97,17 +97,14 @@ func VerifyCephStatus(struc *[]model.StatValues, dataset map[string]queue.Datase
 
 	stale, err := verifyPG(dataset["PG_Stale"].Queue, length, "PG_Stale")
 	*struc = append(*struc, stale)
-
 	logging.WithID("BA-OPERATOR-VERIFIER-18").Info(util.StatValuesToString(stale))
 
 	degraded, err := verifyPG(dataset["PG_Degraded"].Queue, length, "PG_Degraded")
 	*struc = append(*struc, degraded)
-
 	logging.WithID("BA-OPERATOR-VERIFIER-19").Info(util.StatValuesToString(degraded))
 
 	undersized, err := verifyPG(dataset["PG_Undersized"].Queue, length, "PG_Undersized")
 	*struc = append(*struc, undersized)
-
 	logging.WithID("BA-OPERATOR-VERIFIER-19").Info(util.StatValuesToString(undersized))
 
 	// tpRead, tpReadStatus, tpReadDev, tpWarning, err := verifyTPRead(dataset["TPread"].Queue, length)
