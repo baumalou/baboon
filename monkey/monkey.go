@@ -21,7 +21,7 @@ func DoTheMonkey() {
 		time.Sleep(time.Duration(random(1, 10)) * time.Minute)
 		if monitoring.VerifyClusterStatus() {
 			s := rand.NewSource(time.Now().Unix())
-			r := rand.New(s) // initialize local pseudorandom generator
+			r := rand.New(s) // initialize local pseudorandom genergoator
 
 			var err error
 			kc, err = kubeclient.GetKubeClient(kc)
