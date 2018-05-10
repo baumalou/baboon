@@ -11,6 +11,7 @@ import (
 	"git.workshop21.ch/workshop21/ba/operator/fio-go"
 	queue "git.workshop21.ch/workshop21/ba/operator/metric-queue"
 	"git.workshop21.ch/workshop21/ba/operator/statistics"
+	"git.workshop21.ch/workshop21/ba/operator/util"
 
 	"git.workshop21.ch/go/abraxas/logging"
 	"github.com/asaskevich/govalidator"
@@ -123,7 +124,7 @@ func GetClusterState(w http.ResponseWriter, r *http.Request) {
 		wg.Wait()
 
 		_, _, data, err := verifier.VerifyClusterStatus(datasets)
-		state = verifier.StatValuesArrayToString(data)
+		state = util.StatValuesArrayToString(data)
 		for _, endpoint := range config.Endpoints {
 			quantiles, _ := statistics.GetQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 			state = state + "\r" + endpoint.Name + "\r" + quantiles
