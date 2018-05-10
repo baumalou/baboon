@@ -18,6 +18,7 @@ func verifyCPUUsage(queue *queue.MetricQueue, length int) (model.StatValues, err
 	//min := stats.Min(usage, length)
 	deviation := stats.Deviation(usage, length)
 	status := model.HEALTHY
+	devStatus := model.HEALTHY
 	if result > 85 {
 		status = model.ERROR
 	} else if result >= 50 && result <= 85 {
@@ -28,11 +29,11 @@ func verifyCPUUsage(queue *queue.MetricQueue, length int) (model.StatValues, err
 		return util.GetStatValuesValue("cpu", result, status), nil
 	}
 	if perc90 > 85 {
-		status = model.ERROR
+		devStatus = model.ERROR
 	} else if perc90 >= 50 {
-		status = model.DEGRADED
+		devStatus = model.DEGRADED
 	}
-	return util.GetStatValuesAll("cpu", result, status, deviation, status, perc90), nil
+	return util.GetStatValuesAll("cpu", result, status, deviation, devStatus, perc90), nil
 }
 
 func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (model.StatValues, error) {
@@ -46,6 +47,7 @@ func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (model.StatValues
 	//min := stats.Min(usage, length)
 	deviation := stats.Deviation(usage, length)
 	status := model.HEALTHY
+	devStatus := model.HEALTHY
 	if result > 50 {
 		status = model.ERROR
 	} else if result >= 30 && result <= 50 {
@@ -56,11 +58,11 @@ func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (model.StatValues
 		return util.GetStatValuesValue("cpu", result, status), nil
 	}
 	if perc90 > 50 {
-		status = model.ERROR
+		devStatus = model.ERROR
 	} else if perc90 >= 30 {
-		status = model.DEGRADED
+		devStatus = model.DEGRADED
 	}
-	return util.GetStatValuesAll("cores", result, status, deviation, status, perc90), nil
+	return util.GetStatValuesAll("cores", result, status, deviation, devStatus, perc90), nil
 }
 
 func verifyMemUsage(queue *queue.MetricQueue, length int) (model.StatValues, error) {
