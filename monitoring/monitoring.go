@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +23,13 @@ import (
 var datasets map[string]queue.Dataset
 
 var wg sync.WaitGroup
+
+var notificationTimer NotificationTimer
+
+type NotificationTimer struct {
+	ErrorTimer    int64
+	DegradedTimer int64
+}
 
 // GetDataset returns a COPY of a dataset
 func GetDataset(endpoint string) (queue.Dataset, error) {
@@ -49,6 +57,7 @@ func MonitorCluster(config *configuration.Config) {
 		logging.WithID("BA-OPERATOR-MONITOR-" + endpoint.Name).Println("generating quantiles")
 		statistics.GetQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
+	notificationTimer = NotificationTimer{ErrorTimer: 0, DegradedTimer: 0}
 	go VerifyClusterStatusRoutine()
 	for {
 		wg.Add(len(datasets))
@@ -79,11 +88,11 @@ func VerifyClusterStatus() bool {
 	switch warning {
 	case model.DEGRADED:
 		notification := fmt.Sprintln("Cluster is nearly Degraded: ", warning)
-		SendNOtification(util.StatValuesArrayToString(vals) + notification)
+		SendNOtification(util.StatValuesArrayToString(vals), notification)
 		logging.WithID("BA-OPERATOR-MONITOR-WARNING-DEGRADED-005").Println(notification)
 	case model.ERROR:
 		notification := fmt.Sprintln("Cluster is nearly in Error State: ", warning)
-		SendNOtification(util.StatValuesArrayToString(vals) + notification)
+		SendNOtification(util.StatValuesArrayToString(vals), notification)
 		logging.WithID("BA-OPERATOR-MONITOR-WARNING-ERROR-005").Println(notification)
 
 	}
@@ -93,12 +102,12 @@ func VerifyClusterStatus() bool {
 		return true
 	case model.DEGRADED:
 		notification := fmt.Sprintln("Cluster is Degraded: ", status)
-		SendNOtification(util.StatValuesArrayToString(vals) + notification)
-		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Println(notification, util.StatValuesArrayToString(vals), vals)
+		SendNOtification(util.StatValuesArrayToString(vals), notification)
+		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Println(notification)
 		return false
 	case model.ERROR:
 		notification := fmt.Sprintln("Cluster is in Error State!!! : ", status)
-		SendNOtification(util.StatValuesArrayToString(vals) + notification)
+		SendNOtification(util.StatValuesArrayToString(vals), notification)
 		logging.WithID("BA-OPERATOR-MONITOR-ERROR-004").Println(notification)
 		return false
 	}
@@ -173,9 +182,28 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 	return data
 
 }
+func notificationNeedsToBeSent(notification string) bool {
+	if strings.Contains(notification, "Degraded") {
+		if time.Now().Unix()-notificationTimer.DegradedTimer > int64((30 * time.Minute).Seconds()) {
+			notificationTimer.DegradedTimer = time.Now().Unix()
+			return true
+		}
+		return false
+	} else if strings.Contains(notification, "Error") {
+		if time.Now().Unix()-notificationTimer.ErrorTimer > int64((30 * time.Minute).Seconds()) {
+			notificationTimer.ErrorTimer = time.Now().Unix()
+			return true
+		}
+		return false
+	}
+	return true
 
-func SendNOtification(notification string) {
-
+}
+func SendNOtification(vals, notification string) {
+	if !notificationNeedsToBeSent(notification) {
+		return
+	}
+	notification = vals + notification
 	url := "https://chat.workshop21.ch/hooks/5zhbybp88jgwp88zanu9j4751w"
 	fmt.Println("URL:>", url)
 

@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 
@@ -60,7 +59,6 @@ func StatValuesArrayToString(struc []model.StatValues) string {
 	for i := 0; i < len(struc); i++ {
 		ret += StatValuesToString(struc[i]) + "\n"
 	}
-	fmt.Println(ret)
 	return ret
 }
 
