@@ -215,9 +215,9 @@ func verifyTPRead(queue *queue.MetricQueue, length int) (model.StatValues, error
 	}
 
 	if perc[0.90] > limitRed {
-		status = model.ERROR
+		devStatus = model.ERROR
 	} else if perc[0.90] >= limitYellow && perc[0.90] <= limitRed {
-		status = model.DEGRADED
+		devStatus = model.DEGRADED
 	}
 	return util.GetStatValuesDev("TPread", perc[0.90], status, deviation, devStatus), nil
 
@@ -248,9 +248,9 @@ func verifyTPWrite(queue *queue.MetricQueue, length int) (model.StatValues, erro
 	}
 
 	if perc[0.90] > limitRed {
-		status = model.ERROR
+		devStatus = model.ERROR
 	} else if perc[0.90] >= limitYellow && perc[0.90] <= limitRed {
-		status = model.DEGRADED
+		devStatus = model.DEGRADED
 	}
 	return util.GetStatValuesDev("commit", perc[0.90], status, deviation, devStatus), nil
 

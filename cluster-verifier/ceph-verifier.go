@@ -76,9 +76,9 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (model.StatVal
 	limitRed := 50.00
 
 	if deviation > limitRed {
-		status = model.ERROR
+		devStatus = model.ERROR
 	} else if deviation >= limitYellow && deviation <= limitRed {
-		status = model.DEGRADED
+		devStatus = model.DEGRADED
 	}
 
 	if result > limitRed {
@@ -92,9 +92,9 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (model.StatVal
 		return util.GetStatValuesDev("commit", result, status, deviation, devStatus), nil
 	}
 	if perc90 > limitRed {
-		status = model.ERROR
+		devStatus = model.ERROR
 	} else if perc90 >= limitYellow {
-		status = model.DEGRADED
+		devStatus = model.DEGRADED
 	}
 
 	return util.GetStatValuesAll("commit", result, status, deviation, devStatus, perc90), nil
@@ -115,9 +115,9 @@ func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (model.StatValu
 	limitRed := 50.00
 
 	if deviation > limitRed {
-		status = model.ERROR
+		devStatus = model.ERROR
 	} else if deviation >= limitYellow && deviation <= limitRed {
-		status = model.DEGRADED
+		devStatus = model.DEGRADED
 	}
 
 	if result > limitRed {
@@ -132,9 +132,9 @@ func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (model.StatValu
 	}
 
 	if perc90 > limitRed {
-		status = model.ERROR
+		devStatus = model.ERROR
 	} else if perc90 >= limitYellow {
-		status = model.DEGRADED
+		devStatus = model.DEGRADED
 	}
 
 	return util.GetStatValuesAll("apply", result, status, deviation, devStatus, perc90), nil
