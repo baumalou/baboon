@@ -62,10 +62,10 @@ Name="NumCoresTotal"
 Path="/api/datasources/proxy/2/api/v1/query_range?query=max(sum(kube_pod_container_resource_requests_cpu_cores)%20by%20(instance))"
 [Endpoints.Endpoint13]
 Name="UsePercOfMem"
-Path="/api/datasources/proxy/2/api/v1/query_range?query=((sum(node_memory_MemTotal)%20-%20sum(node_memory_MemFree)%20-%20sum(node_memory_Buffers)%20-%20sum(node_memory_Cached))%20%2F%20sum(node_memory_MemTotal))%20*%20100"
+Path="/api/datasources/proxy/2/api/v1/query_range?query=max(sum(kube_pod_container_resource_requests_cpu_cores)%20by%20(instance))%20%2F%20min(sum(kube_node_status_allocatable_cpu_cores)%20by%20(instance))%20*%20100"
 [Endpoints.Endpoint14]
 Name="networkTransmit"
-Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(rate(node_network_receive_bytes%7Bdevice!~%22lo%22%7D%5B1m%5D))%2Bsum(rate(node_network_transmit_bytes%7Bdevice!~%22lo%22%7D%5B1m%5D))%0A"
+Path="/api/datasources/proxy/2/api/v1/query_range?sum(rate(node_network_transmit_bytes%7Bdevice!~%22lo%22%7D%5B5m%5D))"
 [Endpoints.Endpoint15]
 Name="PG_Stale"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_pg_stale"
