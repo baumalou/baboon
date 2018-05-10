@@ -34,7 +34,7 @@ Name="Mon_quorum"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_mon_quorum_count"
 [Endpoints.Endpoint4]
 Name="Av_capacity"
-Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_cluster_total_used_bytes%2Fceph_cluster_total_bytes"
+Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_cluster_total_used_bytes%2Fceph_cluster_total_bytes*100"
 [Endpoints.Endpoint5]
 Name="PG_Undersized"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_pg_undersized"
