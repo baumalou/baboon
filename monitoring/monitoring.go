@@ -47,7 +47,7 @@ func MonitorCluster(config *configuration.Config) {
 		logging.WithID("BA-OPERATOR-MONITOR-" + endpoint.Name).Println("generating quantiles")
 		statistics.GetQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
-	go VerifyClusterStatusRoutine()
+	//go VerifyClusterStatusRoutine()
 	for {
 		wg.Add(len(datasets))
 		for _, endpoint := range config.Endpoints {
@@ -55,19 +55,20 @@ func MonitorCluster(config *configuration.Config) {
 			go monitorRoutineSecs(datasets[endpoint.Name].Queue, config, endpoint.Path, now, config.SampleInterval)
 		}
 		wg.Wait()
+		VerifyClusterStatus()
 		//verifier.VerifyClusterStatus(datasets)
 		// why call this function when another already defined function exists in local package?
 		//VerifyClusterStatus()
-		time.Sleep(10 * time.Second)
+		time.Sleep(time.Duration(config.SampleInterval) * time.Second)
 	}
 }
 
-func VerifyClusterStatusRoutine() {
-	for {
-		VerifyClusterStatus()
-		time.Sleep(1 * time.Second)
-	}
-}
+// func VerifyClusterStatusRoutine() {
+// 	for {
+
+// 		time.Sleep(config.SampleInterval * time.Second)
+// 	}
+// }
 func VerifyClusterStatus() bool {
 	notificationTimer := notifier.GetNotificationTimer()
 	status, warning, vals, err := verifier.VerifyClusterStatus(datasets)
@@ -122,7 +123,9 @@ func MonitorRoutineSecs(mq *queue.MetricQueue, config *configuration.Config, end
 func FillDataset(datasets *map[string]queue.Dataset, config *configuration.Config) {
 	wg.Add(len(config.Endpoints))
 	for _, endpoint := range config.Endpoints {
-		go createEndpointDataset(datasets, config, endpoint)
+
+		// go createEndpointDataset(datasets, config, endpoint)
+		createEndpointDataset(datasets, config, endpoint)
 	}
 	wg.Wait()
 }
@@ -131,6 +134,7 @@ func createEndpointDataset(datasets *map[string]queue.Dataset, config *configura
 	defer wg.Done()
 	now := int(time.Now().Unix())
 	data := getMonitoringData(config, endpoint.Path, now, 3600)
+
 	monQueue := queue.NewMetricQueue()
 	monQueue.InsertMonitoringTupelInQueue(data)
 	(*datasets)[endpoint.Name] = queue.Dataset{Queue: monQueue, Name: endpoint.Name}

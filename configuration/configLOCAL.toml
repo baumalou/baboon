@@ -64,7 +64,7 @@ Name="UsePercOfMem"
 Path="/api/datasources/proxy/2/api/v1/query_range?query=max(sum(kube_pod_container_resource_requests_cpu_cores)%20by%20(instance))%20%2F%20min(sum(kube_node_status_allocatable_cpu_cores)%20by%20(instance))%20*%20100"
 [Endpoints.Endpoint14]
 Name="networkTransmit"
-Path="/api/datasources/proxy/2/api/v1/query_range?sum(rate(node_network_transmit_bytes%7Bdevice!~%22lo%22%7D%5B5m%5D))"
+Path="/api/datasources/proxy/2/api/v1/query_range?query=sum(rate(node_network_transmit_bytes%7Bdevice!~%22lo%22%7D%5B5m%5D))&start=1525965556&end=1525969156&step=30"
 [Endpoints.Endpoint15]
 Name="PG_Stale"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=ceph_pg_stale"

@@ -59,7 +59,7 @@ Name="OSDInQuorum"
 Path="/api/datasources/proxy/1/api/v1/query_range?query=sum(ceph_osd_in)"
 [Endpoints.Endpoint12]
 Name="NumCoresTotal"
-Path="api/datasources/proxy/2/api/v1/query_range?query=max(sum(kube_pod_container_resource_requests_cpu_cores)%20by%20(instance))%20%2F%20min(sum(kube_node_status_allocatable_cpu_cores)%20by%20(instance))%20*%20100"
+Path="/api/datasources/proxy/2/api/v1/query_range?query=(max(sum(kube_pod_container_resource_requests_cpu_cores)%20by%20(instance))%2Fmin(sum(kube_node_status_allocatable_cpu_cores)%20by%20(instance))%20)*100"
 [Endpoints.Endpoint13]
 Name="UsePercOfMem"
 Path="/api/datasources/proxy/2/api/v1/query_range?query=max(sum(kube_pod_container_resource_requests_cpu_cores)%20by%20(instance))%20%2F%20min(sum(kube_node_status_allocatable_cpu_cores)%20by%20(instance))%20*%20100"
