@@ -29,7 +29,7 @@ func main() {
 	time.Sleep(6 * time.Second)
 	//var keys []int
 	log.Println()
-	go monkey.DoTheMonkey()
+	go monkey.DoTheMonkey(config)
 	monitoring.MonitorCluster(config)
 
 	/*

@@ -5,21 +5,23 @@ import (
 	"time"
 
 	"git.workshop21.ch/go/abraxas/logging"
+	"git.workshop21.ch/workshop21/ba/operator/configuration"
 	"git.workshop21.ch/workshop21/ba/operator/kubeclient"
 	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 )
 
 var kc *kubeclient.KubeClient
 
-func DoTheMonkey() {
-	reasons := make([]string, 0)
-	reasons = append(reasons,
-		"mon",
-		"osd")
+func DoTheMonkey(config *configuration.Config) {
+
+	components := make([]string, 0)
+	components = append(components,
+		config.RookMonSelector,
+		config.RookOSDSelector)
 	logging.WithID("MONKEY-000").Info("monkey started going wild")
 	for {
 		time.Sleep(time.Duration(13) * time.Minute)
-		logging.WithID("MONKEY-000-1").Info("monkey is shooting coconut against cluster")
+
 		if monitoring.VerifyClusterStatus() {
 			s := rand.NewSource(time.Now().Unix())
 			r := rand.New(s) // initialize local pseudorandom genergoator
@@ -30,7 +32,8 @@ func DoTheMonkey() {
 				logging.WithID("MONKEY-001").Error("\nnot able to get kubeclient " + err.Error())
 				return
 			}
-			component := reasons[r.Intn(len(reasons))]
+			component := components[r.Intn(len(components))]
+			logging.WithID("MONKEY-001-1").Info("monkey is shooting coconut against ", component)
 			err = kc.KillOnePodOf(component)
 			if err != nil {
 				logging.WithID("MONKEY-002").Error("\nnot able to kill a pod out of " + component + err.Error())

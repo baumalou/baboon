@@ -1,6 +1,7 @@
 package kubeclient
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -48,7 +49,11 @@ func (kc *KubeClient) KillOnePodOf(selector string) error {
 	if err != nil {
 		return err
 	}
-	oldestPod := getOldestPod(pods.Items)
+	oldestPod, err := getOldestPod(pods.Items)
+	if err != nil {
+		logging.WithError("BA-OPERATOR-PODKILLER-002", err).Error("Pod could not be found.")
+		return err
+	}
 	logging.WithID("BA-OPERATOR-PODKILLER-001").Info("Name: ", oldestPod.Name)
 	go killPod(oldestPod, kc)
 	return nil
@@ -61,9 +66,13 @@ func killPod(pod *v1.Pod, kc *KubeClient) {
 		logging.WithError("BA-OPERATOR-PODKILLER-002", err).Error("Pod could not be killed.")
 
 	}
+
 }
 
-func getOldestPod(pods []v1.Pod) *v1.Pod {
+func getOldestPod(pods []v1.Pod) (*v1.Pod, error) {
+	if len(pods) == 0 {
+		return nil, errors.New("Empty PodList provided")
+	}
 	oldestPod := v1.Pod{ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Time{Time: time.Now()}}}
 	for _, pod := range pods {
 		if oldestPod.CreationTimestamp.Unix() > pod.CreationTimestamp.Unix() {
@@ -71,7 +80,7 @@ func getOldestPod(pods []v1.Pod) *v1.Pod {
 		}
 	}
 
-	return &oldestPod
+	return &oldestPod, nil
 }
 
 // CreateKubeClientWithoutSvcConfig
