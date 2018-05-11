@@ -19,6 +19,7 @@ func DoTheMonkey() {
 	logging.WithID("MONKEY-000").Info("monkey started going wild")
 	for {
 		time.Sleep(time.Duration(13) * time.Minute)
+		logging.WithID("MONKEY-000-1").Info("monkey is shooting coconut against cluster")
 		if monitoring.VerifyClusterStatus() {
 			s := rand.NewSource(time.Now().Unix())
 			r := rand.New(s) // initialize local pseudorandom genergoator
@@ -35,7 +36,7 @@ func DoTheMonkey() {
 				logging.WithID("MONKEY-002").Error("\nnot able to kill a pod out of " + component + err.Error())
 			}
 		} else {
-			logging.WithID("MONKEY-003").Error("\nnot able to kill pod. Cluster is not ready!")
+			logging.WithID("MONKEY-003").Error("not able to kill pod. Cluster is not ready!")
 		}
 
 	}
