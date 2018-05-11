@@ -54,11 +54,11 @@ func StatValuesToString(struc model.StatValues) string {
 	ret := struc.Name + ": " + FloatToStr(struc.Value) + " " + StatusToStr(struc.ValueStatus)
 
 	if !math.IsNaN(struc.DevValue) {
-		ret = ret + " " + FloatToStr(struc.DevValue)
+		ret = ret + " Deviation: " + FloatToStr(struc.DevValue)
 		if !math.IsNaN(struc.PercentileVal) {
-			ret = ret + " " + FloatToStr(struc.PercentileVal)
+			ret = ret + " 90Percentile: " + FloatToStr(struc.PercentileVal)
 		}
-		ret = ret + " " + StatusToStr(struc.DevStatus)
+		ret = ret + " PredictedStatus: " + StatusToStr(struc.DevStatus)
 	}
 	return ret
 }

@@ -26,21 +26,21 @@ func verifyCPUUsage(queue *queue.MetricQueue, length int) (model.StatValues, err
 	}
 	perc90, err := stats.GetNPercentile(usage, 90)
 	if err != nil {
-		return util.GetStatValuesValue("cpu", result, status), nil
+		return util.GetStatValuesValue("cluster-cpu", result, status), nil
 	}
 	if perc90 > 85 {
 		devStatus = model.ERROR
 	} else if perc90 >= 50 {
 		devStatus = model.DEGRADED
 	}
-	return util.GetStatValuesAll("cpu", result, status, deviation, devStatus, perc90), nil
+	return util.GetStatValuesAll("cluster-cpu", result, status, deviation, devStatus, perc90), nil
 }
 
 func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (model.StatValues, error) {
 
 	usage := queue.GetNNewestTupel(length)
 	if len(usage) == 0 {
-		return util.GetStatValuesEmpty("cores"), nil
+		return util.GetStatValuesEmpty("cluster-cores"), nil
 	}
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
@@ -55,21 +55,21 @@ func verifyCPUCoresUsage(queue *queue.MetricQueue, length int) (model.StatValues
 	}
 	perc90, err := stats.GetNPercentile(usage, 90)
 	if err != nil {
-		return util.GetStatValuesValue("cpu", result, status), nil
+		return util.GetStatValuesValue("cluster-cpu", result, status), nil
 	}
 	if perc90 > 50 {
 		devStatus = model.ERROR
 	} else if perc90 >= 30 {
 		devStatus = model.DEGRADED
 	}
-	return util.GetStatValuesAll("cores", result, status, deviation, devStatus, perc90), nil
+	return util.GetStatValuesAll("cluster-cores", result, status, deviation, devStatus, perc90), nil
 }
 
 func verifyMemUsage(queue *queue.MetricQueue, length int) (model.StatValues, error) {
 
 	usage := queue.GetNNewestTupel(length)
 	if len(usage) == 0 {
-		return util.GetStatValuesEmpty("memory"), nil
+		return util.GetStatValuesEmpty("cluster-memory"), nil
 	}
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
@@ -81,13 +81,13 @@ func verifyMemUsage(queue *queue.MetricQueue, length int) (model.StatValues, err
 	} else if result >= 60 && result <= 80 {
 		status = model.DEGRADED
 	}
-	return util.GetStatValuesValue("memory", result, status), nil
+	return util.GetStatValuesValue("cluster-memory", result, status), nil
 }
 
 func verifyNetworkUsage(transmit *queue.MetricQueue, length int) (model.StatValues, error) {
 	data := transmit.GetNNewestTupel(length)
 	if len(data) == 0 {
-		return util.GetStatValuesEmpty("network"), nil
+		return util.GetStatValuesEmpty("cluster-network"), nil
 	}
 	result := stats.Mean(data, length)
 	//max := stats.Max(data, length)
@@ -95,10 +95,10 @@ func verifyNetworkUsage(transmit *queue.MetricQueue, length int) (model.StatValu
 	//deviation := stats.Deviation(data, length)
 
 	status := model.HEALTHY
-	if result > 80 {
+	if result > 8000000000 {
 		status = model.ERROR
-	} else if result >= 50 && result <= 80 {
+	} else if result >= 5000000000 && result <= 8000000000 {
 		status = model.DEGRADED
 	}
-	return util.GetStatValuesValue("network", result, status), nil
+	return util.GetStatValuesValue("cluster-network", result, status), nil
 }

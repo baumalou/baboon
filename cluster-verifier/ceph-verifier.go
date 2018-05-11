@@ -11,7 +11,7 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (
 	writeDS := write.GetNNewestTupel(length)
 	readDS := read.GetNNewestTupel(length)
 	if len(writeDS) == 0 || len(readDS) == 0 {
-		return util.GetStatValuesEmpty("iops"), nil
+		return util.GetStatValuesEmpty("ceph-iops"), nil
 	}
 
 	data := make([]queue.MetricTupel, length)
@@ -40,13 +40,13 @@ func verifyIOPS(write *queue.MetricQueue, read *queue.MetricQueue, length int) (
 		status = model.DEGRADED
 	}
 
-	return util.GetStatValuesAll("iops", result, status, deviation, devStatus, perc75), nil
+	return util.GetStatValuesAll("ceph-iops", result, status, deviation, devStatus, perc75), nil
 }
 
 func verifyMonitorCounts(queue *queue.MetricQueue, length int) (model.StatValues, error) {
 	data := queue.GetNNewestTupel(length)
 	if len(data) == 0 {
-		return util.GetStatValuesEmpty("mon"), nil
+		return util.GetStatValuesEmpty("ceph-mon"), nil
 	}
 	min := stats.Min(data, length)
 
@@ -57,7 +57,7 @@ func verifyMonitorCounts(queue *queue.MetricQueue, length int) (model.StatValues
 		mon = model.DEGRADED
 	}
 
-	return util.GetStatValuesValue("mon", min, mon), nil
+	return util.GetStatValuesValue("ceph-mon", min, mon), nil
 }
 
 func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (model.StatValues, error) {
@@ -65,7 +65,7 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (model.StatVal
 	commit := queue.GetNNewestTupel(length)
 	result := stats.Mean(commit, length)
 	if len(commit) == 0 {
-		return util.GetStatValuesEmpty("commit"), nil
+		return util.GetStatValuesEmpty("ceph-commit"), nil
 	}
 	deviation := stats.Deviation(commit, length)
 	deviation += result
@@ -89,7 +89,7 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (model.StatVal
 
 	perc90, err := stats.GetNPercentile(commit, 0.90)
 	if err != nil {
-		return util.GetStatValuesDev("commit", result, status, deviation, devStatus), nil
+		return util.GetStatValuesDev("ceph-commit", result, status, deviation, devStatus), nil
 	}
 	if perc90 > limitRed {
 		devStatus = model.ERROR
@@ -97,13 +97,13 @@ func verifyOSDCommitLatency(queue *queue.MetricQueue, length int) (model.StatVal
 		devStatus = model.DEGRADED
 	}
 
-	return util.GetStatValuesAll("commit", result, status, deviation, devStatus, perc90), nil
+	return util.GetStatValuesAll("ceph-commit", result, status, deviation, devStatus, perc90), nil
 }
 
 func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (model.StatValues, error) {
 	apply := queue.GetNNewestTupel(length)
 	if len(apply) == 0 {
-		return util.GetStatValuesEmpty("apply"), nil
+		return util.GetStatValuesEmpty("ceph-apply"), nil
 	}
 	result := stats.Mean(apply, length)
 	deviation := stats.Deviation(apply, length)
@@ -128,7 +128,7 @@ func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (model.StatValu
 
 	perc90, err := stats.GetNPercentile(apply, 0.90)
 	if err != nil {
-		return util.GetStatValuesDev("commit", result, status, deviation, devStatus), nil
+		return util.GetStatValuesDev("ceph-commit", result, status, deviation, devStatus), nil
 	}
 
 	if perc90 > limitRed {
@@ -137,13 +137,13 @@ func verifyOSDApplyLatency(queue *queue.MetricQueue, length int) (model.StatValu
 		devStatus = model.DEGRADED
 	}
 
-	return util.GetStatValuesAll("apply", result, status, deviation, devStatus, perc90), nil
+	return util.GetStatValuesAll("ceph-apply", result, status, deviation, devStatus, perc90), nil
 }
 
 func verifyCephHealth(queue *queue.MetricQueue, length int) (model.StatValues, error) {
 	health := queue.GetNNewestTupel(length)
 	if len(health) == 0 {
-		return util.GetStatValuesEmpty("health"), nil
+		return util.GetStatValuesEmpty("ceph-health"), nil
 	}
 	max := stats.Max(health, length)
 
@@ -154,14 +154,14 @@ func verifyCephHealth(queue *queue.MetricQueue, length int) (model.StatValues, e
 		res = model.DEGRADED
 	}
 
-	return util.GetStatValuesValue("health", max, res), nil
+	return util.GetStatValuesValue("ceph-health", max, res), nil
 }
 
 func verifyOSDOrphan(in *queue.MetricQueue, up *queue.MetricQueue, length int) (model.StatValues, error) {
 	inDS := in.GetNNewestTupel(length)
 	upDS := up.GetNNewestTupel(length)
 	if len(inDS) == 0 || len(upDS) == 0 {
-		return util.GetStatValuesEmpty("orphan"), nil
+		return util.GetStatValuesEmpty("ceph-orphan"), nil
 	}
 	data := make([]queue.MetricTupel, length)
 	for i := 0; i < length; i++ {
@@ -183,13 +183,13 @@ func verifyOSDOrphan(in *queue.MetricQueue, up *queue.MetricQueue, length int) (
 		status = model.DEGRADED
 	}
 
-	return util.GetStatValuesValue("orphan", max, status), nil
+	return util.GetStatValuesValue("ceph-orphan", max, status), nil
 }
 func verifyOSDDown(up *queue.MetricQueue, in *queue.MetricQueue, length int) (model.StatValues, error) {
 	inDS := in.GetNNewestTupel(length)
 	upDS := up.GetNNewestTupel(length)
 	if len(inDS) == 0 || len(upDS) == 0 {
-		return util.GetStatValuesEmpty("down"), nil
+		return util.GetStatValuesEmpty("ceph-down"), nil
 	}
 	data := make([]queue.MetricTupel, length)
 	for i := 0; i < length; i++ {
@@ -210,14 +210,14 @@ func verifyOSDDown(up *queue.MetricQueue, in *queue.MetricQueue, length int) (mo
 		status = model.DEGRADED
 	}
 
-	return util.GetStatValuesValue("down", max, status), nil
+	return util.GetStatValuesValue("ceph-down", max, status), nil
 }
 
 func verifyCapUsage(queue *queue.MetricQueue, length int) (model.StatValues, error) {
 
 	usage := queue.GetNNewestTupel(length)
 	if len(usage) == 0 {
-		return util.GetStatValuesEmpty("capacity"), nil
+		return util.GetStatValuesEmpty("ceph-capacity"), nil
 	}
 	result := stats.Mean(usage, length)
 	//max := stats.Max(usage, length)
@@ -230,7 +230,7 @@ func verifyCapUsage(queue *queue.MetricQueue, length int) (model.StatValues, err
 	} else if result >= 10 && result <= 80 {
 		status = model.DEGRADED
 	}
-	return util.GetStatValuesValue("capacity", result, status), nil
+	return util.GetStatValuesValue("ceph-capacity", result, status), nil
 }
 
 func verifyPG(queue *queue.MetricQueue, length int, metric string) (model.StatValues, error) {
