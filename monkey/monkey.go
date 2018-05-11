@@ -18,7 +18,7 @@ func DoTheMonkey() {
 		"osd")
 	logging.WithID("MONKEY-000").Info("monkey started going wild")
 	for {
-		time.Sleep(time.Duration(random(1, 10)) * time.Minute)
+		time.Sleep(time.Duration(13) * time.Minute)
 		if monitoring.VerifyClusterStatus() {
 			s := rand.NewSource(time.Now().Unix())
 			r := rand.New(s) // initialize local pseudorandom genergoator
