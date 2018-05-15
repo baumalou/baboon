@@ -9,16 +9,16 @@ import (
 	"time"
 )
 
-var notificationTimer *NotificationTimer
+var notificationTimer *Notifier
 
-type NotificationTimer struct {
+type Notifier struct {
 	ErrorTimer    int64
 	DegradedTimer int64
 }
 
-func GetNotificationTimer() *NotificationTimer {
+func GetNotifier() *Notifier {
 	if notificationTimer == nil {
-		notificationTimer = &NotificationTimer{ErrorTimer: 0, DegradedTimer: 0}
+		notificationTimer = &Notifier{ErrorTimer: 0, DegradedTimer: 0}
 		return notificationTimer
 	}
 	return notificationTimer
@@ -40,11 +40,14 @@ func notificationNeedsToBeSent(notification string) bool {
 	return true
 
 }
-func (nt *NotificationTimer) SendNOtification(vals, notification string) {
+func (nt *Notifier) SendStatusNotification(vals, notification string) {
 	if !notificationNeedsToBeSent(notification) {
 		return
 	}
-	notification = vals + notification
+	nt.SendNotification(vals + notification)
+}
+
+func (nt *Notifier) SendNotification(notification string) error {
 	url := "https://chat.workshop21.ch/hooks/5zhbybp88jgwp88zanu9j4751w"
 	fmt.Println("URL:>", url)
 
@@ -53,12 +56,15 @@ func (nt *NotificationTimer) SendNOtification(vals, notification string) {
 			"text": "` + notification + `"
 		}`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -66,5 +72,5 @@ func (nt *NotificationTimer) SendNOtification(vals, notification string) {
 	fmt.Println("response Headers:", resp.Header)
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println("response Body:", string(body))
-
+	return nil
 }

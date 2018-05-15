@@ -7,6 +7,7 @@ import (
 
 	"git.workshop21.ch/go/abraxas/logging"
 	"git.workshop21.ch/workshop21/ba/operator/configuration"
+	"git.workshop21.ch/workshop21/ba/operator/monitoring"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -61,10 +62,10 @@ func (kc *KubeClient) KillOnePodOf(selector string) error {
 
 func killPod(pod *v1.Pod, kc *KubeClient) {
 	time.Sleep(10 * time.Second)
+	go monitoring.RecoveryWatcher()
 	err := kc.Clientset.CoreV1().Pods(kc.SvcConfig.RookNamespace).Delete(pod.Name, &metav1.DeleteOptions{})
 	if err != nil {
 		logging.WithError("BA-OPERATOR-PODKILLER-002", err).Error("Pod could not be killed.")
-
 	}
 
 }

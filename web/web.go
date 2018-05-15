@@ -185,6 +185,6 @@ func killPod(component string, w http.ResponseWriter) {
 	err = kc.KillOnePodOf(component)
 	if err != nil {
 		w.Write([]byte("\nnot able to kill a pod out of " + component + err.Error()))
-
 	}
+	go monitoring.RecoveryWatcher()
 }

@@ -47,6 +47,7 @@ func MonitorCluster(config *configuration.Config) {
 		logging.WithID("BA-OPERATOR-MONITOR-" + endpoint.Name).Println("generating quantiles")
 		statistics.GetQuantiles(datasets[endpoint.Name].Queue.Dataset, config)
 	}
+	go RecoveryWatcher()
 	//go VerifyClusterStatusRoutine()
 	for {
 		wg.Add(len(datasets))
@@ -70,7 +71,7 @@ func MonitorCluster(config *configuration.Config) {
 // 	}
 // }
 func VerifyClusterStatus() bool {
-	notificationTimer := notifier.GetNotificationTimer()
+	notifier := notifier.GetNotifier()
 	status, warning, vals, err := verifier.VerifyClusterStatus(datasets)
 	if err != nil {
 		logging.WithError("BA-OPERATOR-MONITOR-003", err).Fatalln("not able to determine Cluster state", err)
@@ -78,27 +79,27 @@ func VerifyClusterStatus() bool {
 	switch warning {
 	case model.DEGRADED:
 		notification := fmt.Sprintln("Cluster is nearly Degraded: ", warning)
-		notificationTimer.SendNOtification(util.StatValuesArrayToString(vals), notification)
-		logging.WithID("BA-OPERATOR-MONITOR-WARNING-DEGRADED-005").Println(notification)
+		notifier.SendStatusNotification(util.StatValuesArrayToString(vals), notification)
+		logging.WithID("BA-OPERATOR-MONITOR-WARNING-DEGRADED-005").Debug(notification)
 	case model.ERROR:
 		notification := fmt.Sprintln("Cluster is nearly in Error State: ", warning)
-		notificationTimer.SendNOtification(util.StatValuesArrayToString(vals), notification)
-		logging.WithID("BA-OPERATOR-MONITOR-WARNING-ERROR-005").Println(notification)
+		notifier.SendStatusNotification(util.StatValuesArrayToString(vals), notification)
+		logging.WithID("BA-OPERATOR-MONITOR-WARNING-ERROR-005").Debug(notification)
 
 	}
 	switch status {
 	case model.HEALTHY:
-		logging.WithID("BA-OPERATOR-MONITOR-HEALTHY-004").Println("Cluster is Healthy: ", status)
+		logging.WithID("BA-OPERATOR-MONITOR-HEALTHY-004").Debug("Cluster is Healthy: ", status)
 		return true
 	case model.DEGRADED:
 		notification := fmt.Sprintln("Cluster is Degraded: ", status)
-		notificationTimer.SendNOtification(util.StatValuesArrayToString(vals), notification)
-		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Println(notification)
+		notifier.SendStatusNotification(util.StatValuesArrayToString(vals), notification)
+		logging.WithID("BA-OPERATOR-MONITOR-DEGRADED-004").Debug(notification)
 		return false
 	case model.ERROR:
 		notification := fmt.Sprintln("Cluster is in Error State!!! : ", status)
-		notificationTimer.SendNOtification(util.StatValuesArrayToString(vals), notification)
-		logging.WithID("BA-OPERATOR-MONITOR-ERROR-004").Println(notification)
+		notifier.SendStatusNotification(util.StatValuesArrayToString(vals), notification)
+		logging.WithID("BA-OPERATOR-MONITOR-ERROR-004").Debug(notification)
 		return false
 	}
 	return false
@@ -174,4 +175,58 @@ func getMonitoringData(config *configuration.Config, endpoint string, timeStampT
 
 	return data
 
+}
+
+// RecoveryWatcher Waits for the cluster to fail and then to recover
+func RecoveryWatcher() {
+	var timeElapsed int64
+	config, err := configuration.ReadConfig(nil)
+	notifier := notifier.GetNotifier()
+	if err != nil {
+		logging.WithID("RECOVERY-002").Error(err, err.Error(), "Not able to read Configuration")
+		notifier.SendNotification("Not able to read Configuration")
+	}
+	timeElapsed, err = watchTimeTillClusterRecover(config)
+	if err != nil {
+		logging.WithID("RECOVERY-003").Error(err, err.Error())
+		notifier.SendNotification("Error waiting for the Cluster to recover - " + err.Error())
+	} else {
+		logging.WithID("RECOVERY-004").Info("Cluster recovered after ", timeElapsed, " seconds")
+	}
+}
+
+// run in chan!
+func watchTimeTillClusterRecover(config *configuration.Config) (int64, error) {
+	for _, endpoint := range config.Endpoints {
+
+		if len(datasets[endpoint.Name].Queue.Dataset) < config.LenghtRecordsToVerify {
+			return 0, errors.New("Not enough monitoring records")
+		}
+	}
+	if waitTilClusterFails() {
+		start := time.Now().Unix()
+		if waitTilClusterRecovers() {
+			return time.Now().Unix() - start, nil
+		}
+		return time.Now().Unix() - start, errors.New("Cluster did not recover in the expected time")
+
+	}
+	return 0, errors.New("Cluster did not fail in the expected time")
+
+}
+
+func waitTilClusterFails() bool {
+	timer := time.Now().Unix()
+	for !VerifyClusterStatus() && (time.Now().Unix())-timer < 300 {
+		time.Sleep(1 * time.Second)
+	}
+	return !VerifyClusterStatus()
+}
+
+func waitTilClusterRecovers() bool {
+	timer := time.Now().Unix()
+	for VerifyClusterStatus() && (time.Now().Unix()-timer < 300) {
+		time.Sleep(1 * time.Second)
+	}
+	return VerifyClusterStatus()
 }
