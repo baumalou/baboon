@@ -10,16 +10,6 @@ docker tag $(docker images -q rook-build-container) docker.workshop21.ch/boilerp
 docker push docker.workshop21.ch/boilerplate/build/rook-go:latest
 ```
 
-rook zerschoss crd k8s kei crd manipulatione me zuelah. dex het kei manipulatione an crd mer zuugelassen.
-crd von rook gelöschd
-
-neuer cluster deployed mit neuem operator
-nur device sdb auf 4-6 mit blustore --> migrationspfad selector auf disk
-neu repl2 auf pool
-kei fragmentation
-von hand eingetragen / regex 
-
-aktuell master version von rook 0.7.0.XX
 
 
 ## storage class
